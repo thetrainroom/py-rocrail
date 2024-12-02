@@ -1,0 +1,49 @@
+[tool.black]
+line-length = 180
+include = 'src/'
+
+[tool.pyright]
+include = []
+ignore = []
+pythonVersion = "3.12"
+pythonPlatform = "Windows"
+reportGeneralTypeIssues = "error"
+reportMissingImports = "error"
+reportUnboundVariable = "error"
+reportMatchNotExhaustive = "error"
+reportUnnecessaryComparison = "warning"
+reportUnnecessaryIsInstance = "none"
+typeCheckingMode = "strict"
+
+[tool.ruff]
+exclude = []
+select = ["E", "F", "N"]
+line-length = 5000 # Enforce with black formatter instead of ruff
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+target-version = "py310"
+
+
+[tool.poetry]
+name = "pyrocrail"
+version = "0.0.0"
+description = "Various scripts used by both X and XC, but mostly geared towards XC"
+authors = ["TheTrainroom"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+
+
+[tool.poetry.dev-dependencies]
+setuptools = "75.2.0"
+wheel = "0.44.0"
+poetry-core = "1.9.1"
+packaging = "24.1"
+types-setuptools = "75.2.0.20241019"
+black = "24.10.0"
+ruff = "0.4.10"
+coverage = "7.6.4"
+pyright = "1.1.385"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

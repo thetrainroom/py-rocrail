@@ -1,5 +1,6 @@
 import threading
-from socket import socket, AF_INET, SOCK_STREAM
+import time
+from socket import socket, AF_INET, SOCK_STREAM, IPPROTO_TCP, TCP_NODELAY
 import xml.etree.ElementTree as ET
 
 
@@ -18,6 +19,7 @@ class Communicator:
         self.run = False
         self.__s: socket | None = None
         self.model = None
+        self.mutex = threading.Lock()
 
     def __del__(self):
         if self.__s is not None:
@@ -26,8 +28,9 @@ class Communicator:
     def send(self, xml_type: str, xml_msg: str) -> str:
         assert self.__s is not None
         xml = create_xml_msg(xml_type, xml_msg)
-        self.__s.send(xml.encode("utf-8"))
         print(xml)
+        with self.mutex:
+            self.__s.send(xml.encode("utf-8"))
         return xml
 
     def start(self):
@@ -87,16 +90,20 @@ class Communicator:
     def _recv(self):
         self.__s = socket(AF_INET, SOCK_STREAM)
         self.__s.connect((self.ip, self.port))
-        self.__s.settimeout(5)
+        self.__s.setsockopt(IPPROTO_TCP, TCP_NODELAY, 1)
+        self.__s.settimeout(2)
         self.run = True
         while self.run:
             try:
-                self._byte_buffer.extend(self.__s.recv(2048))
+                with self.mutex:
+                    self._byte_buffer.extend(self.__s.recv(2048))
             except KeyboardInterrupt:
                 self.run = False
                 break
             except TimeoutError:
+                time.sleep(0.1)
                 continue
+
             end_pos = -1
             while end_pos is not None:
                 end_pos = self._parse()

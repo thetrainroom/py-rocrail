@@ -46,7 +46,8 @@ class PyRocrail:
 
     def stop(self):
         self.running = False
-        self.__clean_thread.join()
+        if self.__clean_thread is not None:
+            self.__clean_thread.join()
         self.com.stop()
 
     def add(self, action: Action):
@@ -68,6 +69,6 @@ class PyRocrail:
                 if t.done():
                     exp = t.exception(0)
                     if exp:
-                        print(repr(exp))
+                        print("Failed Thread:", repr(exp))
                     continue
                 self.__threads.append(t)

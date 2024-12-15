@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 
 
 def create_xml_msg(xml_type: str, xml_msg: str) -> str:
-    return f'<xmlh><xml size="{len(xml_msg)}" name="{xml_type}"/></xmlh>{xml_msg}\n\x00'
+    return f'<?xml version="1.0" encoding="UTF-8"?><xmlh><xml size="{len(xml_msg)}" name="{xml_type}"/></xmlh>{xml_msg}\n\x00'
 
 
 class Communicator:
@@ -19,6 +19,9 @@ class Communicator:
         self.__s: socket | None = None
         self.model = None
         self.mutex = threading.Lock()
+        self.__thread = None
+        self.__ping_thread = None
+        self.__last_command = time.monotonic()
 
     def __del__(self):
         if self.__s is not None:
@@ -28,21 +31,34 @@ class Communicator:
         assert self.__s is not None
         xml = create_xml_msg(xml_type, xml_msg)
         print(xml)
-        with self.mutex:
-            self.__s.send(xml.encode("utf-8"))
-        return xml
+        while True:
+            try:
+                if self.mutex:
+                    self.__s.send(xml.encode("utf-8"))
+                self.__last_command = time.monotonic()
+                return xml
+            except Exception as e:
+                print("Send Error:", repr(e))
+            time.sleep(0.1)
 
     def start(self):
         self.__thread = threading.Thread(target=self._recv)
+        self.__ping_thread = threading.Thread(target=self._ping)
         self.__thread.start()
+        while not self.run:
+            time.sleep(0.01)
+        self.__ping_thread.start()
         while not self.run:
             pass
         print(f"Connected to {self.ip}:{self.port}")
 
     def stop(self):
         self.run = False
+        if self.__ping_thread is not None:
+            self.__ping_thread.join()
         if self.__thread is not None:
             self.__thread.join()
+
 
     def _parse(self) -> int | None:
         pos = self._byte_buffer.find(0)
@@ -84,21 +100,30 @@ class Communicator:
             root = ET.fromstring(r)
             self.model.decode(root)
         except Exception as e:
-            print(repr(e))
+            print("Decoder Error:", repr(e))
 
     def _recv(self):
         self.__s = socket(AF_INET, SOCK_STREAM)
         self.__s.connect((self.ip, self.port))
-        self.__s.setsockopt(IPPROTO_TCP, TCP_NODELAY, 1)
+        # self.__s.setsockopt(IPPROTO_TCP, TCP_NODELAY, 1)
         self.__s.settimeout(2)
         self.run = True
         while self.run:
             try:
-                with self.mutex:
-                    self._byte_buffer.extend(self.__s.recv(2048))
+                #with self.mutex:
+                self._byte_buffer.extend(self.__s.recv(2048))
             except KeyboardInterrupt:
                 self.run = False
                 break
+            except ConnectionResetError:
+                try:
+                    self.__s.close()
+                except:
+                    pass
+                print("reconnect")
+                self.__s = socket(AF_INET, SOCK_STREAM)
+                self.__s.connect((self.ip, self.port))
+
             except TimeoutError:
                 time.sleep(0.1)
                 continue
@@ -109,3 +134,18 @@ class Communicator:
                 if end_pos:
                     self._decode(end_pos)
         self.__s.close()
+
+
+    def _ping(self):
+        print("Start Ping")
+        ping_str = '<?xml version="1.0" encoding="UTF-8"?><xmlh><xml size="8"/></xmlh><ping/>\0'
+        while self.run:
+            if time.monotonic() > self.__last_command + 5:
+                print("Ping")
+                try:
+                    if self.mutex:
+                        self.__s.send(ping_str.encode("utf-8"))
+                    self.__last_command = time.monotonic()
+                except:
+                    pass
+            time.sleep(0.1)

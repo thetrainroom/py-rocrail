@@ -19,7 +19,7 @@ class Feedback:
             set_attr(self, attr, value)
 
     def set(self, en: bool):
-        xml = f'<fb id="{self.id}" cmd="{"on" if en else "off"}"/>'
+        xml = f'<fb id="{self.idx}" cmd="{"on" if en else "off"}"/>'
         # xml = f'<fb id="{self.id}" state="{str(en).lower()}"/>'
         if self.state != en:
             self.communicator.send("fb", xml)

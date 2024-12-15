@@ -4,7 +4,6 @@ from socket import socket, AF_INET, SOCK_STREAM, IPPROTO_TCP, TCP_NODELAY
 import xml.etree.ElementTree as ET
 
 
-
 def create_xml_msg(xml_type: str, xml_msg: str) -> str:
     return f'<xmlh><xml size="{len(xml_msg)}" name="{xml_type}"/></xmlh>{xml_msg}\n\x00'
 
@@ -51,7 +50,7 @@ class Communicator:
             return None
         else:
             r = self._byte_buffer[: pos + 1].decode("utf-8")
-            self._byte_buffer = self._byte_buffer[pos + 1:]
+            self._byte_buffer = self._byte_buffer[pos + 1 :]
 
         self.__buffer.extend(list(r.split("\n")))
         while "?xml" not in self.__buffer[0] and len(self.__buffer) > 0:

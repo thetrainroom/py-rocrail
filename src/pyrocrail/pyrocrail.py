@@ -1,4 +1,3 @@
-from dataclasses import dataclass, field
 import time
 from typing import Callable
 from enum import Enum
@@ -13,14 +12,16 @@ class Trigger(Enum):
     TIME = 0
     EVENT = 1
 
+
 class Action:
-    def __init__(self, script: Callable, trigger_type: Trigger = Trigger.TIME, trigger = "", condition: str = "", timeout: int | float = 60):
+    def __init__(self, script: Callable, trigger_type: Trigger = Trigger.TIME, trigger="", condition: str = "", timeout: int | float = 60):
         self.script = script
         self.trigger_type = trigger_type
         self.trigger = trigger
         self.condition = condition
         self.timeout = timeout
         self._start_time = 0.0
+
 
 class PyRocrail:
     def __init__(self, ip: str = "localhost", port: int = 8051):
@@ -29,7 +30,7 @@ class PyRocrail:
         self._event_actions: list[Action] = []
         self._time_actions: list[Action] = []
         self._executor = ThreadPoolExecutor()
-        self.__threads: list[Future]  = []
+        self.__threads: list[Future] = []
         self.running = True
         self.__clean_thread = None
 
@@ -59,7 +60,6 @@ class PyRocrail:
             ac._start_time = time.monotonic()
             self.__threads.append(self._executor.submit(ac.script, self.model))
         return
-
 
     def __clean(self):
         while self.running:

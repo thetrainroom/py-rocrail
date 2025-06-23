@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<plan rocrailversion="2.1.3727" rocrailpwd="D:\src\py-rocrail\example_plan" rocrailos="win64" rocrailarch="X86_64" rocrailip="172.31.0.1" supportkey="false" healthy="true" title="New Plan" remark="">
+<plan rocrailversion="2.1.3727" rocrailpwd="D:\src\py-rocrail\example_plan" rocrailos="win64" rocrailarch="X86_64" rocrailip="172.22.176.1" supportkey="false" healthy="true" title="New Plan" remark="">
   <zlevel title="Level 0"/>
   <boosterlist/>
   <lightctrl converted="true"/>
@@ -14,10 +14,12 @@
     <operator id="Train" prev_id="Train" desc="" remark="" home="" lcid="" swaptrainimage="false" swaplocoimage="false" carids="Car1" cargo="none" class="" roadname="" V_max="0" length="0" radius="0" maxincline="0" centertrain="0" centertrainonly="false" inatpre2in="false" shortin="false" commuter="false" secondnextblock="false" secondnextblock4wait="false" runaround="false" freeblockonenter="false" usescheduletime="false" usedepartdelay="true" stoponfailgoto="false" directgoto="false" finderoptions="0" shiftonly="false" fdesconly="false" fncnt="4"/>
   </operatorlist>
   <fblist>
-    <fb id="fb1" x="4" y="3" z="0" state="false" identifier="" regval="0" gpssid="0" shortcut="false" counter="8" wheelcount="0" carcount="0" countedcars="0" bididir="0" val="0" load="0" maxload="0" prev_id="fb1" desc="" decid="" show="true" showid="true" road="false" curve="false" ignoresamestate="false" blockid="" routeids="" accnr="0" timer="0" zerocodedelay="0" operable="true" generated="false" iid="" uidname="" rfid="0" bus="1" addr="1" reg0="0" reg1="0" reg2="0" reg3="0" reg4="0" reg5="0" reg6="0" reg7="0" threshold="1" offset="" baseaddr="0" cutoutbus="0" cutoutaddr="0" subscribe="" fbtype="0" regtrigger="0" activelow="false" resetwc="false" ctciid="" ctcbus="0" ctcaddr="0" ctcport="0" ctcgate="0" ctcasswitch="false" ctcOutput="" ctcColorOn="0" ctcColorOff="0" gpsx="0" gpsy="0" gpsz="0" gpstolx="0" gpstoly="0" gpstolz="0" actor="user" regunits="0"/>
+    <fb id="fb1" x="4" y="3" z="0" state="false" identifier="" regval="44" gpssid="0" shortcut="false" counter="2" wheelcount="0" carcount="0" countedcars="0" bididir="0" val="0" load="0" maxload="0" prev_id="fb1" desc="" decid="" show="true" showid="true" road="false" curve="false" ignoresamestate="false" blockid="" routeids="" accnr="0" timer="0" zerocodedelay="0" operable="true" generated="false" iid="vcs-1" uidname="" rfid="0" bus="1" addr="1" reg0="0" reg1="0" reg2="0" reg3="0" reg4="0" reg5="0" reg6="0" reg7="0" threshold="1" offset="" baseaddr="0" cutoutbus="0" cutoutaddr="0" subscribe="" fbtype="0" regtrigger="0" activelow="false" resetwc="false" ctciid="" ctcbus="0" ctcaddr="0" ctcport="0" ctcgate="0" ctcasswitch="false" ctcOutput="" ctcColorOn="0" ctcColorOff="0" gpsx="0" gpsy="0" gpsz="0" gpstolx="0" gpstoly="0" gpstolz="0" actor="user" regunits="0"/>
   </fblist>
   <swlist>
-    <sw type="left" id="sw1" x="7" y="3" z="0" testing="false" actor="user"/>
+    <sw type="left" id="sw1" x="7" y="3" z="0" testing="false" actor="" switched="9" porttype="0" frogporttype="0" prev_id="sw1" useshortid="false" shortid="" nr="0" desc="" decid="" blockid="" routeids="" manual="false" outoforder="false" operable="true" staticuse="false" exclude="false" accnr="0" subtype="default" savepos="none" dir="false" swtype="default" road="false" show="true" showid="true" sod="true" swapstraight="false" rectcrossing="false" remark="" iid="" uidname="" bus="0" addr1="1" port1="1" gate1="0" inv="false" singlegate="false" accessory="true" addr2="0" port2="0" gate2="0" inv2="false" actdelay="true" syncdelay="false" delay="500" param1="0" value1="1" param2="0" value2="1" addr1remark="" addr2remark="" param="0" prot="D" tdiid="" tdaddr="0" tdport="0" td="false" fbR="" fbG="" fb2R="" fb2G="" fbOcc="" fbOcc2="" fbRinv="false" fbGinv="false" fb2Rinv="false" fb2Ginv="false" fbset="false" fbusefield="false" ctciid1="" ctciid2="" ctcuid1="" ctcuid2="" ctcbus1="0" ctcbus2="0" ctcaddr1="0" ctcaddr2="0" ctccmdon1="false" ctccmdon2="false" ctcflip1="true" ctcflip2="true" ctciidled1="" ctciidled2="" ctcbusled1="0" ctcbusled2="0" ctcaddrled1="0" ctcaddrled2="0" ctcportled1="0" ctcportled2="0" ctcgateled1="0" ctcgateled2="0" ctcasswitchled1="false" ctcasswitchled2="false" ctcOutputStraight="" ctcOutputThrown="" ctcOutputPoint="" ctcColorStraight="0" ctcColorThrown="0" ctcColorPoint="0" ctcColorStraightOcc="0" ctcColorThrownOcc="0" ctcColorPointLock="0" frogiid="" buspol="0" frogtimer="0" addr0pol1="0" port0pol1="0" gate0pol1="0" addr0pol2="0" port0pol2="0" gate0pol2="0" addr1pol1="0" port1pol1="0" gate1pol1="0" addr1pol2="0" port1pol2="0" gate1pol2="0" frogaccessory="true" frogswitch="false" froginvert="false" state="straight" wantedstate="straight" fieldstate="straight">
+      <accessoryctrl active="false" invert="false" automode="false" interval="0" delay="0" lockroutes="" freeblocks=""/>
+    </sw>
   </swlist>
   <sglist>
     <sg type="light" signal="main" id="sg1" x="9" y="3" z="0" addr1="0" state="red"/>
@@ -31,4 +33,10 @@
   <colist>
     <co id="co1" x="21" y="3" z="0"/>
   </colist>
+  <sclist>
+    <sc id="NEW" prev_id="NEW" trainid="" group="" class="" timeframe="1" timeprocessing="1" fromhour="0" tohour="0" cycles="0" maxdelay="60" scaction="" followuponenter="false" weekdays="127" blockexitside="0" recordtime="false">
+      <scentry block="bk1" blockexitside="0" ahour="0" aminute="0" hour="0" minute="0" minwait="0" regularstop="true" swap="false" free2go="false" indelay="0" actionsatin="false" departspeed="0" departspeedpercent="0" departspeedmaxkmh="0"/>
+      <scentry block="sb1" blockexitside="0" ahour="0" aminute="9" hour="0" minute="0" minwait="0" regularstop="true" swap="false" free2go="false" indelay="0" actionsatin="false" departspeed="0" departspeedpercent="0" departspeedmaxkmh="0"/>
+    </sc>
+  </sclist>
 </plan>

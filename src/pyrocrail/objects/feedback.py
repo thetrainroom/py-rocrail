@@ -32,7 +32,7 @@ class Feedback:
         xml = f'<fb id="{self.idx}" cmd="off"/>'
         if self.state:
             self.communicator.send("fb", xml)
-        self.state = not self.state
+        self.state = False
 
     def flip(self):
         xml = f'<fb id="{self.idx}" cmd="flip"/>'

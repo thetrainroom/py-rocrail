@@ -1,5 +1,5 @@
 import time
-from pyrocrail.pyrocrail import PyRocrail, Action, Trigger
+from pyrocrail.pyrocrail import PyRocrail
 from pyrocrail.model import Model
 
 

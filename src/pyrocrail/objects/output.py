@@ -37,9 +37,21 @@ class Output:
                 co.color = Color(**sub.attrib)
 
     def xml(self):
+        # TODO: Verify exact XML format for output control commands
+        # TODO: Add proper error handling for missing attributes
         if self.color:
             cmd = f'<co id="{self.idx}" state="{self.state}" value="{self.value}" valueoff="{self.valueoff}" iid="{self.iid}">\n{self.color.xml()}\n</co>'
         else:
             cmd = f'<co id="{self.idx}" state="{self.state}" value="{self.value}" valueoff="{self.valueoff}" iid="{self.iid}"/>'
 
+        self.communicator.send("co", cmd)
+        
+    def on(self):
+        # TODO: Verify correct command format for turning output on
+        cmd = f'<co id="{self.idx}" cmd="on"/>'
+        self.communicator.send("co", cmd)
+        
+    def off(self):
+        # TODO: Verify correct command format for turning output off
+        cmd = f'<co id="{self.idx}" cmd="off"/>'
         self.communicator.send("co", cmd)

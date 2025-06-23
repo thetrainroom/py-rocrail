@@ -49,6 +49,32 @@ class PyRocrail:
         if self.__clean_thread is not None:
             self.__clean_thread.join()
         self.com.stop()
+        
+    def power_on(self):
+        """Turn system power on"""
+        self.com.send("sys", '<sys cmd="go"/>')
+        
+    def power_off(self):
+        """Turn system power off"""
+        self.com.send("sys", '<sys cmd="stop"/>')
+        
+    def emergency_stop(self):
+        """Emergency stop all trains"""
+        # TODO: Verify emergency stop command format
+        self.com.send("sys", '<sys cmd="ebreak"/>')
+        
+    def auto_on(self):
+        """Enable automatic mode"""
+        self.com.send("auto", '<auto cmd="on"/>')
+        
+    def auto_off(self):
+        """Disable automatic mode"""
+        self.com.send("auto", '<auto cmd="off"/>')
+        
+    def reset(self):
+        """Reset the system"""
+        # TODO: Verify reset command format
+        self.com.send("sys", '<sys cmd="reset"/>')
 
     def add(self, action: Action):
         if action.trigger_type == Trigger.TIME:

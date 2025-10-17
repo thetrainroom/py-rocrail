@@ -9,6 +9,8 @@ from pyrocrail.objects.switch import Switch
 from pyrocrail.objects.signal import Signal
 from pyrocrail.objects.route import Route
 from pyrocrail.objects.block import Block
+from pyrocrail.objects.car import Car
+from pyrocrail.objects.operator import Operator
 from pyrocrail.objects import set_attr
 from pyrocrail.communicator import Communicator
 
@@ -31,6 +33,8 @@ class Model:
         self._sg_domain: dict[str, Signal] = {}
         self._st_domain: dict[str, Route] = {}
         self._bk_domain: dict[str, Block] = {}
+        self._car_domain: dict[str, Car] = {}
+        self._operator_domain: dict[str, Operator] = {}
         self.curr_time: float = 0.0
         self.clock: Clock = Clock()
         self.change_callback = None
@@ -68,6 +72,12 @@ class Model:
             elif child.tag == "st":
                 # Route state update
                 self._update_st(child)
+            elif child.tag == "car":
+                # Car state update
+                self._update_car(child)
+            elif child.tag == "operator":
+                # Operator state update
+                self._update_operator(child)
             # TODO: Add output state update handler (co)
 
     def build(self, plan_xml: ET.Element):
@@ -86,6 +96,10 @@ class Model:
                 self._build_st(child)
             elif child.tag == "bklist":
                 self._build_bk(child)
+            elif child.tag == "carlist":
+                self._build_car(child)
+            elif child.tag == "operatorlist":
+                self._build_operator(child)
         self.plan_recv = True
 
     def get_fb(self, label: str) -> Feedback:
@@ -108,6 +122,12 @@ class Model:
         
     def get_bk(self, label: str) -> Block:
         return self._bk_domain[label]
+
+    def get_car(self, label: str) -> Car:
+        return self._car_domain[label]
+
+    def get_operator(self, label: str) -> Operator:
+        return self._operator_domain[label]
 
     def _recv_clock(self, tag: ET.Element):
         self.clock.hour = int(tag.attrib["hour"])
@@ -153,6 +173,16 @@ class Model:
         for child in bklist:
             bk = Block(child, self.communicator)
             self._bk_domain[bk.idx] = bk
+
+    def _build_car(self, carlist: ET.Element):
+        for child in carlist:
+            car = Car(child, self.communicator)
+            self._car_domain[car.idx] = car
+
+    def _build_operator(self, operatorlist: ET.Element):
+        for child in operatorlist:
+            opr = Operator(child, self.communicator)
+            self._operator_domain[opr.idx] = opr
 
     def _update_lc(self, lc_xml: ET.Element):
         """Update locomotive state from server"""
@@ -297,3 +327,55 @@ class Model:
         # Call change callback if registered
         if self.change_callback is not None:
             self.change_callback('st', st_id, st)
+
+    def _update_car(self, car_xml: ET.Element):
+        """Update car state from server"""
+        car_id = car_xml.attrib.get('id')
+
+        if not car_id:
+            print(f"Warning: Car update without id: {ET.tostring(car_xml, encoding='unicode')[:100]}")
+            return
+
+        # Check if car exists
+        if car_id not in self._car_domain:
+            print(f"Warning: Received update for unknown car: {car_id}")
+            return
+
+        # Update car attributes
+        car = self._car_domain[car_id]
+        for attr, value in car_xml.attrib.items():
+            if attr == 'id':
+                continue  # Don't overwrite the id
+            set_attr(car, attr, value)
+
+        # Call change callback if registered
+        if self.change_callback is not None:
+            self.change_callback('car', car_id, car)
+
+    def _update_operator(self, operator_xml: ET.Element):
+        """Update operator state from server"""
+        operator_id = operator_xml.attrib.get('id')
+
+        if not operator_id:
+            print(f"Warning: Operator update without id: {ET.tostring(operator_xml, encoding='unicode')[:100]}")
+            return
+
+        # Check if operator exists
+        if operator_id not in self._operator_domain:
+            print(f"Warning: Received update for unknown operator: {operator_id}")
+            return
+
+        # Update operator attributes
+        opr = self._operator_domain[operator_id]
+        for attr, value in operator_xml.attrib.items():
+            if attr == 'id':
+                continue  # Don't overwrite the id
+            # Handle 'class' attribute specially (Python keyword)
+            if attr == 'class':
+                set_attr(opr, 'class_', value)
+            else:
+                set_attr(opr, attr, value)
+
+        # Call change callback if registered
+        if self.change_callback is not None:
+            self.change_callback('operator', operator_id, opr)

@@ -5,21 +5,23 @@
 
 ## Executive Summary
 
-PyRocrail currently implements **9 of ~22** runtime-controllable object types (41%) with **verified command support**. This library aims to replace XML scripting with Python for better control and automation.
+PyRocrail currently implements **10 of ~22** runtime-controllable object types (45%) with **verified command support**. This library aims to replace XML scripting with Python for better control and automation.
 
 **Current Status:**
-- ✅ **State updates**: COMPLETE (8 object types, 100% coverage for implemented objects)
-- ✅ **Core objects**: 7 of 9 objects have 100% command coverage
+- ✅ **State updates**: COMPLETE (9 object types, 100% coverage for implemented objects)
+- ✅ **Core objects**: 7 of 10 objects have 100% command coverage
 - ✅ **Route parsing**: Switch/output/permission child elements
-- ✅ **Car/Operator**: Rolling stock and train composition management
-- ❌ **Missing**: 13+ object types (Turntable, Text, Schedule, etc.)
+- ✅ **Car/Operator/Schedule**: Rolling stock, train composition, and timetable support
+- ❌ **Missing**: 12+ object types (Turntable, Text, etc.)
 
 **Recent Progress (2025-10-17):**
-- Implemented Car and Operator objects (630 cars + 90 operators in PCAP now handled!)
-- Implemented state update handling for all 8 major object types
+- Implemented Car, Operator, and Schedule objects
+- Car: 5 commands (630 messages in PCAP now handled!)
+- Operator: 4 commands (90 messages in PCAP now handled!)
+- Schedule: 3 commands (UNVERIFIED - not in official docs) + entry parsing
+- Implemented state update handling for all 9 major object types
 - Verified all commands against official XMLScript documentation
-- Added 9 verified commands across 9 objects
-- **Message handling improved from 62.9% to 89.9%** (+27% increase!)
+- **Message handling: 89.9%** (2396 of 2666 messages)
 
 ---
 
@@ -56,15 +58,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
-### 1.4 Schedule (sc)
-**Purpose**: Train schedules/timetables
-**Commands**: start, stop, modify, next
-**Use Case**: Automated timetable operations
-**Priority**: HIGH
-
----
-
-### 1.5 Tour
+### 1.4 Tour
 **Purpose**: Automated tour sequences
 **Commands**: start, stop, reset
 **Use Case**: Demo mode, visitor presentations
@@ -72,7 +66,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
-### 1.6 Location
+### 1.5 Location
 **Purpose**: Geographic locations on layout
 **Commands**: Modify properties, state tracking
 **Use Case**: Station management, geography tracking
@@ -80,7 +74,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
-### 1.7 Analyser
+### 1.6 Analyser
 **Purpose**: Track analyser for decoder programming
 **Commands**: start, stop, readcv, writecv
 **Use Case**: Decoder programming, maintenance
@@ -88,7 +82,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
-### 1.8 Booster
+### 1.7 Booster
 **Purpose**: Power district/booster control
 **Commands**: on, off, status
 **Use Case**: Power management, short circuit handling
@@ -96,7 +90,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
-### 1.9 Link
+### 1.8 Link
 **Purpose**: Cross-references between objects
 **Commands**: activate, deactivate
 **Use Case**: Complex object relationships
@@ -104,7 +98,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
-### 1.10 Variable (var)
+### 1.9 Variable (var)
 **Purpose**: Global variables for scripting
 **Commands**: get, set, increment, decrement
 **Use Case**: State tracking in Python scripts
@@ -112,7 +106,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
-### 1.11 Selector Table (seltab)
+### 1.10 Selector Table (seltab)
 **Purpose**: Selection tables for routing
 **Commands**: select, next, previous
 **Use Case**: Complex routing decisions
@@ -120,7 +114,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
-### 1.12 Weather
+### 1.11 Weather
 **Purpose**: Weather effects control
 **Commands**: Set conditions, themes, lighting effects
 **Use Case**: Atmospheric effects, time-of-day simulation
@@ -306,6 +300,32 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
+### 2.10 Schedule (`src/pyrocrail/objects/schedule.py`) ✨ NEW
+
+**⚠️  Implemented Commands** (3 total - UNVERIFIED):
+- `start()` - Start the schedule (UNVERIFIED)
+- `stop()` - Stop the schedule (UNVERIFIED)
+- `reset()` - Reset to beginning (UNVERIFIED)
+
+**⚠️  Warning**: These commands are NOT documented in official XMLScript reference and may not work with actual Rocrail servers.
+
+**✅ State Updates**: All schedule attributes, entry list
+
+**✅ Schedule Entry Parsing**:
+- `ScheduleEntry` dataclass for each stop/waypoint
+- Parses block, hour, minute, minwait, regularstop, etc.
+- Full timetable structure support
+
+**Configuration Attributes**:
+- `trainid`, `group`, `class_` - Schedule classification
+- `timeframe`, `fromhour`, `tohour` - Time configuration
+- `cycles`, `maxdelay` - Operation settings
+- `entries` - List of ScheduleEntry objects
+
+**Coverage**: Structure complete, commands unverified ⚠️
+
+---
+
 ## 3. Missing System-Level Features
 
 ### 3.1 System Commands (`src/pyrocrail/pyrocrail.py:53`)
@@ -368,8 +388,9 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 - ✅ Route state updates - Free/locked/set status
 - ✅ Car state updates - Status, location, waybill ✨ NEW
 - ✅ Operator state updates - Locomotive, cars, cargo ✨ NEW
+- ✅ Schedule state updates - All attributes, entry list ✨ NEW
 
-**Result**: 8 object types with complete state update handling
+**Result**: 9 object types with complete state update handling
 
 **PCAP Test Results**: 89.9% of messages handled (2396 of 2666 messages)
 
@@ -427,7 +448,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 | Category | Before | After | Coverage |
 |----------|--------|-------|----------|
-| **Object Types** | 7 | 9 | 41% (13 missing) |
+| **Object Types** | 7 | 10 | 45% (12 missing) |
 | **Locomotive Commands** | 7 | 11 | ✅ 11 verified |
 | **Block Commands** | 7 | 7 | ✅ 100% |
 | **Switch Commands** | 5 | 7 | ✅ 100% |
@@ -437,15 +458,17 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 | **Feedback Commands** | 4 | 4 | ✅ 100% |
 | **Car Commands** | 0 | 5 | ✅ 100% ✨ NEW |
 | **Operator Commands** | 0 | 4 | ✅ 100% ✨ NEW |
-| **State Updates** | 0% | 100% | ✅ 8 object types |
+| **Schedule Commands** | 0 | 3 | ⚠️ UNVERIFIED ✨ NEW |
+| **State Updates** | 0% | 100% | ✅ 9 object types |
 | **System Commands** | 6 | 6 | ~40% (10+ missing) |
 | **Model Queries** | 1 | 1 | ~11% (8+ missing) |
 
 **Overall Improvement**:
-- Commands: 39 → 57 (+18 verified commands, +46%)
-- Object types: 7 → 9 (+2 new types)
-- State updates: 0% → 100% (8 object types)
-- Objects with 100% command coverage: 0 → 7
+- Commands: 39 → 60 (+21 commands, +54%)
+- Object types: 7 → 10 (+3 new types)
+- State updates: 0% → 100% (9 object types)
+- Objects with 100% verified command coverage: 0 → 7
+- Objects with structure + unverified commands: 1 (Schedule)
 
 ---
 
@@ -460,28 +483,33 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 1. ✅ **Car** - Rolling stock management (820 objects, 5 commands) ✨ NEW
 2. ✅ **Operator** - Train compositions (115 objects, 4 commands) ✨ NEW
 
-### Phase 3 - Remaining High Priority Objects (CURRENT PRIORITY)
+### ⚠️  Phase 3 - PARTIALLY COMPLETE (2025-10-17)
+1. ⚠️ **Schedule** - Timetable operations (structure complete, 3 UNVERIFIED commands) ✨ NEW
+   - Full entry parsing and state updates implemented
+   - Commands (start/stop/reset) NOT documented in XMLScript
+   - Needs testing with real Rocrail server to verify commands
+
+### Phase 4 - Remaining High Priority Objects (CURRENT PRIORITY)
 1. **Turntable** - Engine facilities, common in layouts
-2. **Schedule** - Timetable operations
 
-### Phase 4 - System Management
-3. **Model queries** - lcprops, add, remove, modify
-4. **System commands** - save, shutdown, sod, eod
-5. **Exception handling** - Parse <exception> messages (330 in PCAP)
+### Phase 5 - System Management
+2. **Model queries** - lcprops, add, remove, modify
+3. **System commands** - save, shutdown, sod, eod
+4. **Exception handling** - Parse <exception> messages (261 in PCAP)
 
-### Phase 5 - Specialized Objects
-6. **Text** - Information displays
-7. **Analyser** - Decoder programming
-8. **Booster** - Power management
-9. **Variable** - Global variables
+### Phase 6 - Specialized Objects
+5. **Text** - Information displays
+6. **Analyser** - Decoder programming
+7. **Booster** - Power management
+8. **Variable** - Global variables
 
-### Phase 6 - Advanced Features
-10. **Stage** - Advanced staging yards
-11. **Tour** - Demo mode
-12. **Weather** - Atmospheric effects
-13. **Link** - Object relationships
-14. **Selector Table** - Complex routing
-15. **Location** - Geographic tracking
+### Phase 7 - Advanced Features
+9. **Stage** - Advanced staging yards
+10. **Tour** - Demo mode
+11. **Weather** - Atmospheric effects
+12. **Link** - Object relationships
+13. **Selector Table** - Complex routing
+14. **Location** - Geographic tracking
 
 ---
 

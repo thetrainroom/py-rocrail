@@ -11,6 +11,7 @@ from pyrocrail.objects.route import Route
 from pyrocrail.objects.block import Block
 from pyrocrail.objects.car import Car
 from pyrocrail.objects.operator import Operator
+from pyrocrail.objects.schedule import Schedule
 from pyrocrail.objects import set_attr
 from pyrocrail.communicator import Communicator
 
@@ -35,6 +36,7 @@ class Model:
         self._bk_domain: dict[str, Block] = {}
         self._car_domain: dict[str, Car] = {}
         self._operator_domain: dict[str, Operator] = {}
+        self._sc_domain: dict[str, Schedule] = {}
         self.curr_time: float = 0.0
         self.clock: Clock = Clock()
         self.change_callback = None
@@ -78,6 +80,9 @@ class Model:
             elif child.tag == "operator":
                 # Operator state update
                 self._update_operator(child)
+            elif child.tag == "sc":
+                # Schedule state update
+                self._update_sc(child)
             # TODO: Add output state update handler (co)
 
     def build(self, plan_xml: ET.Element):
@@ -100,6 +105,8 @@ class Model:
                 self._build_car(child)
             elif child.tag == "operatorlist":
                 self._build_operator(child)
+            elif child.tag == "sclist":
+                self._build_sc(child)
         self.plan_recv = True
 
     def get_fb(self, label: str) -> Feedback:
@@ -128,6 +135,9 @@ class Model:
 
     def get_operator(self, label: str) -> Operator:
         return self._operator_domain[label]
+
+    def get_schedule(self, label: str) -> Schedule:
+        return self._sc_domain[label]
 
     def _recv_clock(self, tag: ET.Element):
         self.clock.hour = int(tag.attrib["hour"])
@@ -183,6 +193,11 @@ class Model:
         for child in operatorlist:
             opr = Operator(child, self.communicator)
             self._operator_domain[opr.idx] = opr
+
+    def _build_sc(self, sclist: ET.Element):
+        for child in sclist:
+            sc = Schedule(child, self.communicator)
+            self._sc_domain[sc.idx] = sc
 
     def _update_lc(self, lc_xml: ET.Element):
         """Update locomotive state from server"""
@@ -379,3 +394,31 @@ class Model:
         # Call change callback if registered
         if self.change_callback is not None:
             self.change_callback('operator', operator_id, opr)
+
+    def _update_sc(self, sc_xml: ET.Element):
+        """Update schedule state from server"""
+        sc_id = sc_xml.attrib.get('id')
+
+        if not sc_id:
+            print(f"Warning: Schedule update without id: {ET.tostring(sc_xml, encoding='unicode')[:100]}")
+            return
+
+        # Check if schedule exists
+        if sc_id not in self._sc_domain:
+            print(f"Warning: Received update for unknown schedule: {sc_id}")
+            return
+
+        # Update schedule attributes
+        sc = self._sc_domain[sc_id]
+        for attr, value in sc_xml.attrib.items():
+            if attr == 'id':
+                continue  # Don't overwrite the id
+            # Handle 'class' attribute specially (Python keyword)
+            if attr == 'class':
+                set_attr(sc, 'class_', value)
+            else:
+                set_attr(sc, attr, value)
+
+        # Call change callback if registered
+        if self.change_callback is not None:
+            self.change_callback('sc', sc_id, sc)

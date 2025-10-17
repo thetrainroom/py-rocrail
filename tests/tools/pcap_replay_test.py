@@ -105,14 +105,15 @@ class MockModel:
         self._bk_domain = {}
         self._car_domain = {}
         self._operator_domain = {}
+        self._sc_domain = {}
         self.plan_recv = False
         self.change_callback = None
 
         # Track which tags we can handle
         self.handled_tags = {
             'plan', 'fblist', 'colist', 'lclist', 'swlist',
-            'sglist', 'stlist', 'bklist', 'carlist', 'operatorlist', 'clock',
-            'lc', 'fb', 'bk', 'sw', 'sg', 'st', 'car', 'operator'  # Added state updates
+            'sglist', 'stlist', 'bklist', 'carlist', 'operatorlist', 'sclist', 'clock',
+            'lc', 'fb', 'bk', 'sw', 'sg', 'st', 'car', 'operator', 'sc'  # Added state updates
         }
 
         # Tags we expect to see but don't handle yet
@@ -120,7 +121,7 @@ class MockModel:
             'exception', 'scentry', 'actionctrl',
             'actioncond', 'fbevent', 'tk', 'bbt', 'fundef', 'swcmd',
             'section', 'fn', 'vr', 'ping', 'auto', 'sys', 'state',
-            'text', 'tt', 'stage', 'schedule', 'tour', 'location',
+            'text', 'tt', 'stage', 'tour', 'location',
             'analyser', 'booster', 'link', 'var', 'seltab', 'weather'
         }
 
@@ -177,10 +178,14 @@ class MockModel:
                         for opr_child in child:
                             if opr_child.tag == 'operator' and 'id' in opr_child.attrib:
                                 self._operator_domain[opr_child.attrib['id']] = {'id': opr_child.attrib['id']}
+                    elif tag == 'sclist':
+                        for sc_child in child:
+                            if sc_child.tag == 'sc' and 'id' in sc_child.attrib:
+                                self._sc_domain[sc_child.attrib['id']] = {'id': sc_child.attrib['id']}
                     continue
 
                 # Check if it's an object state update
-                if tag in ['fb', 'co', 'lc', 'sw', 'sg', 'st', 'bk', 'car', 'operator']:
+                if tag in ['fb', 'co', 'lc', 'sw', 'sg', 'st', 'bk', 'car', 'operator', 'sc']:
                     # Check if it has an id (state update vs list)
                     if 'id' in child.attrib:
                         # This is a state update
@@ -265,6 +270,16 @@ class MockModel:
                             # Check if we have this operator in our domain
                             operator_id = child.attrib.get('id')
                             if operator_id in self._operator_domain:
+                                self.stats.add_handled(f"{tag}-state-update")
+                            else:
+                                self.stats.add_unhandled(
+                                    f"{tag}-state-update-unknown",
+                                    ET.tostring(child, encoding='unicode')
+                                )
+                        elif tag == 'sc':
+                            # Check if we have this schedule in our domain
+                            sc_id = child.attrib.get('id')
+                            if sc_id in self._sc_domain:
                                 self.stats.add_handled(f"{tag}-state-update")
                             else:
                                 self.stats.add_unhandled(

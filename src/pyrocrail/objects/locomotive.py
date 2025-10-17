@@ -104,3 +104,22 @@ class Locomotive:
         # TODO: Verify shortcut command format
         cmd = f'<lc id="{self.idx}" cmd="shortcut"/>'
         self.communicator.send("lc", cmd)
+
+    def regularreset(self):
+        """Regular reset - removes assigned schedule"""
+        cmd = f'<lc id="{self.idx}" cmd="regularreset"/>'
+        self.communicator.send("lc", cmd)
+
+    def softreset(self):
+        """Soft reset locomotive"""
+        cmd = f'<lc id="{self.idx}" cmd="softreset"/>'
+        self.communicator.send("lc", cmd)
+
+    def use_schedule(self, schedule_id: str):
+        """Assign schedule to locomotive
+
+        Args:
+            schedule_id: Schedule ID to use
+        """
+        cmd = f'<lc id="{self.idx}" cmd="useschedule" scheduleid="{schedule_id}"/>'
+        self.communicator.send("lc", cmd)

@@ -55,3 +55,20 @@ class Output:
         # TODO: Verify correct command format for turning output off
         cmd = f'<co id="{self.idx}" cmd="off"/>'
         self.communicator.send("co", cmd)
+
+    def flip(self):
+        """Toggle output state (on <-> off)"""
+        cmd = f'<co id="{self.idx}" cmd="flip"/>'
+        self.communicator.send("co", cmd)
+
+    def active(self, duration_ms: int = None):
+        """Set output active for specified duration then turn off
+
+        Args:
+            duration_ms: Active duration in milliseconds (optional)
+        """
+        if duration_ms:
+            cmd = f'<co id="{self.idx}" cmd="active" active="{duration_ms}"/>'
+        else:
+            cmd = f'<co id="{self.idx}" cmd="active"/>'
+        self.communicator.send("co", cmd)

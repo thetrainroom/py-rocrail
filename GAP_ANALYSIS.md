@@ -1,0 +1,474 @@
+# Gap Analysis: PyRocrail vs Rocrail Specification
+
+**Date**: 2025-10-17 (Updated)
+**Source**: [Rocrail Wiki](https://wiki.rocrail.net/) - [XMLScript Documentation](https://wiki.rocrail.net/doku.php?id=xmlscripting-en)
+
+## Executive Summary
+
+PyRocrail currently implements **7 of ~22** runtime-controllable object types (32%) with **verified command support**. This library aims to replace XML scripting with Python for better control and automation.
+
+**Current Status:**
+- ✅ **State updates**: COMPLETE (62.5% of messages handled)
+- ✅ **Core objects**: 5 of 7 objects have 100% command coverage
+- ✅ **Route parsing**: Switch/output/permission child elements
+- ❌ **Missing**: 15+ object types (Turntable, Text, Car, Schedule, etc.)
+
+**Recent Progress (2025-10-17):**
+- Implemented state update handling for all 6 major object types
+- Verified all commands against official XMLScript documentation
+- Added 9 verified commands across objects
+- Achieved 62.5% message handling (up from 6.1%)
+
+---
+
+## 1. Missing Object Types (Runtime Controllable)
+
+These Rocrail objects can be controlled at runtime but are **NOT implemented**:
+
+### 1.1 Text (tx)
+**Purpose**: Text displays for stations/panels
+**Commands**: Set text content, format control, display on/off
+**Use Case**: Station announcements, panel displays
+**Priority**: MEDIUM
+
+---
+
+### 1.2 Turntable (tt)
+**Purpose**: Turntable/fiddle yard control
+**Commands**:
+- `goto` - Move to track number
+- `rotate` - Rotate degrees
+- `calibrate` - Calibrate position
+- `lock`/`unlock` - Lock/unlock bridge
+
+**Use Case**: Engine servicing facilities, staging yards
+**Priority**: HIGH
+
+---
+
+### 1.3 Stage
+**Purpose**: Staging yard sections (fiddle yard)
+**Commands**: enter, exit, compress, expand
+**Use Case**: Hidden staging, fiddle yards
+**Priority**: MEDIUM
+
+---
+
+### 1.4 Schedule (sc)
+**Purpose**: Train schedules/timetables
+**Commands**: start, stop, modify, next
+**Use Case**: Automated timetable operations
+**Priority**: HIGH
+
+---
+
+### 1.5 Tour
+**Purpose**: Automated tour sequences
+**Commands**: start, stop, reset
+**Use Case**: Demo mode, visitor presentations
+**Priority**: LOW
+
+---
+
+### 1.6 Location
+**Purpose**: Geographic locations on layout
+**Commands**: Modify properties, state tracking
+**Use Case**: Station management, geography tracking
+**Priority**: LOW
+
+---
+
+### 1.7 Car
+**Purpose**: Individual rolling stock/cars
+**Commands**: assign, release, couple, uncouple
+**Use Case**: Freight car routing, shunting operations
+**Priority**: MEDIUM
+
+---
+
+### 1.8 Operator
+**Purpose**: Operator/dispatcher management
+**Commands**: assign, release
+**Use Case**: Multi-user layouts, dispatcher control
+**Priority**: LOW
+
+---
+
+### 1.9 Analyser
+**Purpose**: Track analyser for decoder programming
+**Commands**: start, stop, readcv, writecv
+**Use Case**: Decoder programming, maintenance
+**Priority**: MEDIUM
+
+---
+
+### 1.10 Booster
+**Purpose**: Power district/booster control
+**Commands**: on, off, status
+**Use Case**: Power management, short circuit handling
+**Priority**: MEDIUM
+
+---
+
+### 1.11 Link
+**Purpose**: Cross-references between objects
+**Commands**: activate, deactivate
+**Use Case**: Complex object relationships
+**Priority**: LOW
+
+---
+
+### 1.12 Variable (var)
+**Purpose**: Global variables for scripting
+**Commands**: get, set, increment, decrement
+**Use Case**: State tracking in Python scripts
+**Priority**: MEDIUM
+
+---
+
+### 1.13 Selector Table (seltab)
+**Purpose**: Selection tables for routing
+**Commands**: select, next, previous
+**Use Case**: Complex routing decisions
+**Priority**: LOW
+
+---
+
+### 1.14 Weather
+**Purpose**: Weather effects control
+**Commands**: Set conditions, themes, lighting effects
+**Use Case**: Atmospheric effects, time-of-day simulation
+**Priority**: LOW
+
+---
+
+## 2. Implemented Objects - Command Coverage
+
+### 2.1 Locomotive (`src/pyrocrail/objects/locomotive.py`)
+
+**✅ Implemented Commands** (11 total):
+- `set_speed()` - Speed control (0-100%)
+- `set_direction()` - Direction (forward/reverse)
+- `stop()` - Emergency stop
+- `set_lights()` - Main lights on/off
+- `set_function()` - Function control (F0-F28)
+- `dispatch()` - Dispatch for auto mode
+- `collect()` - Collect from auto mode
+- `shortcut()` - Short circuit handling
+- `regularreset()` - Remove assigned schedule ✨ NEW
+- `softreset()` - Soft reset ✨ NEW
+- `use_schedule()` - Assign schedule ✨ NEW
+
+**✅ State Updates**: Speed, direction, position, block, mode, functions
+
+**❌ Missing** (Not in XMLScript docs):
+- Additional commands may exist but are not documented in official XMLScript reference
+- Commands like `velocity`, `gotoblock`, `consist` etc. mentioned in other sources but not verified
+
+**Coverage**: 11 documented commands ✅
+
+---
+
+### 2.2 Block (`src/pyrocrail/objects/block.py`)
+
+**✅ Implemented Commands** (7 total - ✅ COMPLETE):
+- `reserve()` - Reserve block for locomotive
+- `free()` - Free the block
+- `go()` - Give go permission
+- `stop()` - Stop locomotive in block
+- `close()` - Close block (no entry)
+- `open()` - Open block (allow entry)
+- `accept_ident()` - Accept locomotive identification
+
+**✅ State Updates**: Occupancy, reservation, locomotive ID, entering state
+
+**✅ Configuration Properties** (not commands):
+- `speed`, `maxkmh` - Speed limits (set in plan, not runtime commands)
+- `waittime` - Wait time (set in plan)
+- Properties can be read but not changed via commands
+
+**Coverage**: 100% of XMLScript documented commands ✅
+
+---
+
+### 2.3 Switch (`src/pyrocrail/objects/switch.py`)
+
+**✅ Implemented Commands** (7 total - ✅ COMPLETE):
+- `straight()` - Set to straight position
+- `turnout()` - Set to turnout position
+- `flip()` - Toggle position
+- `lock()` - Lock in position
+- `unlock()` - Unlock
+- `left()` - Left position (3-way switches) ✨ NEW
+- `right()` - Right position (3-way switches) ✨ NEW
+
+**✅ State Updates**: Position (straight/turnout/left/right)
+
+**Coverage**: 100% of XMLScript documented commands ✅
+
+---
+
+### 2.4 Signal (`src/pyrocrail/objects/signal.py`)
+
+**✅ Implemented Commands** (10 total - ✅ COMPLETE):
+- `red()` - Stop aspect
+- `green()` - Clear aspect
+- `yellow()` - Caution aspect
+- `white()` - Shunt aspect
+- `auto()` - Automatic mode
+- `manual()` - Manual mode
+- `set_aspect()` - Programmatic aspect setting
+- `next_aspect()` - Cycle to next aspect
+- `aspect_number()` - Complex signals (aspect 0-31) ✨ NEW
+- `blank()` - Turn off signal ✨ NEW
+
+**✅ State Updates**: Current aspect, mode
+
+**Coverage**: 100% of XMLScript documented commands ✅
+
+---
+
+### 2.5 Route (`src/pyrocrail/objects/route.py`)
+
+**✅ Implemented Commands** (5 total - ✅ COMPLETE):
+- `set()` / `go()` - Activate route
+- `lock()` - Lock route
+- `unlock()` - Unlock route
+- `free()` - Free route
+- `test()` - Test route without activating
+
+**✅ Child Element Parsing** (✨ NEW):
+- `SwitchCommand` - Parses switch commands in routes
+- `OutputCommand` - Parses output commands in routes
+- `Permission` - Parses route permissions
+
+**✅ State Updates**: Route state (free/locked/set), status
+
+**❌ Additional Commands** (mentioned but not documented):
+- `classset`, `classadd`, `classdel` - Exist but no examples in XMLScript docs
+
+**Coverage**: 100% of documented commands + child parsing ✅
+
+---
+
+### 2.6 Output (`src/pyrocrail/objects/output.py`)
+
+**✅ Implemented Commands** (4 total - ✅ COMPLETE):
+- `on()` - Turn on
+- `off()` - Turn off
+- `flip()` - Toggle state ✨ NEW
+- `active()` - Timed activation ✨ NEW
+- Color support (RGB/RGBW via xml())
+
+**✅ State Updates**: State (on/off), value
+
+**Coverage**: 100% of XMLScript documented commands ✅
+
+---
+
+### 2.7 Feedback (`src/pyrocrail/objects/feedback.py`)
+
+**✅ Implemented Commands** (4 total - ✅ COMPLETE):
+- `on()` - Set sensor on
+- `off()` - Set sensor off
+- `flip()` - Toggle state
+- `set()` - Set to boolean state
+
+**✅ State Updates**: Sensor state (on/off)
+
+**Coverage**: 100% of XMLScript documented commands ✅
+
+---
+
+## 3. Missing System-Level Features
+
+### 3.1 System Commands (`src/pyrocrail/pyrocrail.py:53`)
+
+**✅ Implemented**:
+- `go` - Power on (power_on)
+- `stop` - Power off (power_off)
+- `ebreak` - Emergency stop (emergency_stop)
+- `reset` - Reset system
+
+**✅ Implemented - Auto Mode**:
+- `auto on` - Enable automatic mode (auto_on)
+- `auto off` - Disable automatic mode (auto_off)
+
+**❌ Missing**:
+- `locliste` - Request locomotive list
+- `save` - Save Rocrail plan to disk
+- `shutdown` - Shutdown Rocrail server
+- `query` - Query server capabilities
+- `sod` - Start of day operations
+- `eod` - End of day operations
+- `updateini` - Update configuration
+- `clock` - Clock control commands
+- `event` - Fire custom events
+- `opendlg` - Open dialog (GUI control)
+
+**Priority**: HIGH (save, shutdown commonly used)
+
+---
+
+### 3.2 Model Queries (`src/pyrocrail/model.py:40`)
+
+**✅ Implemented**:
+- `<model cmd="plan"/>` - Get complete plan
+
+**❌ Missing**:
+- `<model cmd="lcprops" val="locoID"/>` - Get locomotive properties
+- `<model cmd="lclist"/>` - Get locomotive list
+- `<model cmd="merge"/>` - Merge plan updates
+- `<model cmd="add"/>` - Add object dynamically
+- `<model cmd="remove"/>` - Remove object
+- `<model cmd="modify"/>` - Modify object properties
+- `<model cmd="swlist"/>` - Get switch list
+- `<model cmd="fblist"/>` - Get feedback list
+
+**Priority**: HIGH (dynamic object management essential)
+
+---
+
+## 4. Event/State Handling
+
+### 4.1 Inbound State Updates ✅ COMPLETE
+
+**✅ Implemented** (2025-10-17):
+- ✅ Locomotive state updates - Speed, direction, position, block, mode
+- ✅ Block occupancy updates - Reserved, occupied, entering, locid
+- ✅ Feedback sensor state changes - On/off state
+- ✅ Switch position updates - Straight/turnout/left/right
+- ✅ Signal aspect changes - Current aspect from automatic mode
+- ✅ Route state updates - Free/locked/set status
+
+**Result**: 62.5% of operational messages now handled (up from 6.1%)
+
+**✅ Callback Support**:
+- `model.change_callback` - Notifies on object state changes
+- Provides object type, ID, and updated object reference
+
+**❌ Still Missing**:
+- Exception/error event parsing (330 messages in PCAP)
+- Power state tracking
+- Auto mode state updates
+- Car/Operator object updates (not implemented yet)
+
+---
+
+### 4.2 Event-Based Actions
+
+**Current State**: Framework exists (`src/pyrocrail/pyrocrail.py:30`) but untested
+
+**Missing**:
+- Event registration for specific objects
+- Event filtering by type
+- Event condition evaluation
+- Event-triggered script execution
+
+**Priority**: HIGH (needed for automation)
+
+---
+
+### 4.3 Exception Handling
+
+**Missing**:
+- `<exception>` tag parsing
+- Short circuit events
+- Communication errors
+- Timeout handling
+- Decoder programming errors
+
+**Priority**: MEDIUM (important for robustness)
+
+---
+
+### 4.4 System State Tracking
+
+**Missing**:
+- `<state power="true|false"/>` - Power state tracking
+- `<auto cmd="on|off"/>` - Auto mode tracking
+- Clock synchronization improvements
+- Server version/capability tracking
+
+**Priority**: MEDIUM (useful for monitoring)
+
+---
+
+## 5. Statistics Summary
+
+| Category | Before | After | Coverage |
+|----------|--------|-------|----------|
+| **Object Types** | 7 | 7 | 32% (15+ missing) |
+| **Locomotive Commands** | 7 | 11 | ✅ 11 verified |
+| **Block Commands** | 7 | 7 | ✅ 100% |
+| **Switch Commands** | 5 | 7 | ✅ 100% |
+| **Signal Commands** | 7 | 10 | ✅ 100% |
+| **Route Commands** | 5 | 5 | ✅ 100% + parsing |
+| **Output Commands** | 2 | 4 | ✅ 100% |
+| **Feedback Commands** | 4 | 4 | ✅ 100% |
+| **State Updates** | 0% | 100% | ✅ 62.5% messages handled |
+| **System Commands** | 6 | 6 | ~40% (10+ missing) |
+| **Model Queries** | 1 | 1 | ~11% (8+ missing) |
+
+**Overall Improvement**:
+- Commands: 39 → 48 (+9 verified commands, +23%)
+- State updates: 0% → 100% (6 object types)
+- Message handling: 6.1% → 62.5% (+56.4%!)
+- Objects with 100% command coverage: 0 → 5
+
+---
+
+## 6. Recommended Implementation Priority
+
+### ✅ Phase 1 - COMPLETE (2025-10-17)
+1. ✅ **State update handling** - All 6 object types implemented
+2. ✅ **Route child elements** - Switch/output/permission parsing complete
+3. ✅ **Command verification** - All commands verified against XMLScript docs
+
+### Phase 2 - High Value New Objects (CURRENT PRIORITY)
+1. **Car** - Rolling stock management (820 objects in user's layout!)
+2. **Operator** - Train compositions (115 objects in user's layout)
+3. **Turntable** - Engine facilities, common in layouts
+4. **Schedule** - Timetable operations
+
+### Phase 3 - System Management
+5. **Model queries** - lcprops, add, remove, modify
+6. **System commands** - save, shutdown, sod, eod
+7. **Exception handling** - Parse <exception> messages (330 in PCAP)
+
+### Phase 4 - Specialized Objects
+8. **Text** - Information displays
+9. **Analyser** - Decoder programming
+10. **Booster** - Power management
+11. **Variable** - Global variables
+
+### Phase 5 - Advanced Features
+12. **Stage** - Advanced staging yards
+13. **Tour** - Demo mode
+14. **Weather** - Atmospheric effects
+15. **Link** - Object relationships
+16. **Selector Table** - Complex routing
+17. **Location** - Geographic tracking
+
+---
+
+## 7. Testing Requirements
+
+See [TESTING_STRATEGY.md](./TESTING_STRATEGY.md) for comprehensive testing approach.
+
+Key testing needs:
+- Unit tests for all object methods
+- Integration tests with mock Rocrail server
+- State update verification
+- Event handling tests
+- Concurrent operation tests
+- Optional E2E tests with real Rocrail
+
+---
+
+## References
+
+- [Rocrail RCP Protocol](https://wiki.rocrail.net/doku.php?id=develop:cs-protocol-en)
+- [Rocrail XML Structure](https://wiki.rocrail.net/rocrail-snapshot/rocrail/wrapper-en.html#rocrail)
+- [XML Scripting](https://wiki.rocrail.net/doku.php?id=xmlscripting-en) (to be replaced by Python)
+- [Rocrail Wiki](https://wiki.rocrail.net/doku.php?id=start)

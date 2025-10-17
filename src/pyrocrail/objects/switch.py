@@ -75,6 +75,18 @@ class Switch:
         cmd = f'<sw id="{self.idx}" cmd="unlock"/>'
         self.communicator.send("sw", cmd)
 
+    def left(self):
+        """Set switch to left position (for 3-way or double-slip switches)"""
+        cmd = f'<sw id="{self.idx}" cmd="left"/>'
+        self.communicator.send("sw", cmd)
+        self.state = "left"
+
+    def right(self):
+        """Set switch to right position (for 3-way or double-slip switches)"""
+        cmd = f'<sw id="{self.idx}" cmd="right"/>'
+        self.communicator.send("sw", cmd)
+        self.state = "right"
+
 
 class ThreeWaySwitch(Switch):
     """Three-way switch implementation"""

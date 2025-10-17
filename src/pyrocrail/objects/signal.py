@@ -102,3 +102,20 @@ class Signal:
         # TODO: Verify manual command format
         cmd = f'<sg id="{self.idx}" cmd="manual"/>'
         self.communicator.send("sg", cmd)
+
+    def aspect_number(self, aspect_num: int):
+        """Set signal to specific numbered aspect (0-31)
+
+        Args:
+            aspect_num: Aspect number (0-31) for complex signals
+        """
+        if not 0 <= aspect_num <= 31:
+            raise ValueError(f"Aspect number must be 0-31, got {aspect_num}")
+        cmd = f'<sg id="{self.idx}" cmd="aspect{aspect_num}"/>'
+        self.communicator.send("sg", cmd)
+        self.aspect = aspect_num
+
+    def blank(self):
+        """Blank the signal (turn off all lights)"""
+        cmd = f'<sg id="{self.idx}" cmd="blank"/>'
+        self.communicator.send("sg", cmd)

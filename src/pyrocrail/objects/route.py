@@ -1,6 +1,30 @@
 import xml.etree.ElementTree as ET
+from dataclasses import dataclass
 from pyrocrail.objects import set_attr
 from pyrocrail.communicator import Communicator
+
+
+@dataclass
+class SwitchCommand:
+    """Switch command in route"""
+    id: str = ""
+    cmd: str = "straight"  # straight, turnout, left, right
+    lock: bool = False
+
+
+@dataclass
+class OutputCommand:
+    """Output command in route"""
+    id: str = ""
+    cmd: str = "on"  # on, off, flip
+    value: int = 0
+
+
+@dataclass
+class Permission:
+    """Route permission"""
+    id: str = ""  # Locomotive or class ID
+    type: str = "include"  # include or exclude
 
 
 class Route:
@@ -34,17 +58,33 @@ class Route:
         for attr, value in st_xml.attrib.items():
             set_attr(self, attr, value)
             
-        # TODO: Parse child elements for switches, outputs, conditions
+        # Parse child elements for switches, outputs, permissions
         for child in st_xml:
             if child.tag == "swcmd":
-                # TODO: Parse switch commands
-                pass
+                # Parse switch command
+                sw_cmd = SwitchCommand(
+                    id=child.attrib.get('id', ''),
+                    cmd=child.attrib.get('cmd', 'straight'),
+                    lock=child.attrib.get('lock', 'false').lower() == 'true'
+                )
+                self.switches.append(sw_cmd)
             elif child.tag == "outcmd":
-                # TODO: Parse output commands
-                pass
+                # Parse output command
+                out_cmd = OutputCommand(
+                    id=child.attrib.get('id', ''),
+                    cmd=child.attrib.get('cmd', 'on'),
+                    value=int(child.attrib.get('value', '0'))
+                )
+                self.outputs.append(out_cmd)
             elif child.tag == "permissionlist":
-                # TODO: Parse permissions
-                pass
+                # Parse permissions
+                for perm_child in child:
+                    if perm_child.tag == "permission":
+                        perm = Permission(
+                            id=perm_child.attrib.get('id', ''),
+                            type=perm_child.attrib.get('type', 'include')
+                        )
+                        self.conditions.append(perm)
                 
     def set(self):
         """Set/activate the route"""

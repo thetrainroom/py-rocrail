@@ -5,21 +5,22 @@
 
 ## Executive Summary
 
-PyRocrail currently implements **10 of ~22** runtime-controllable object types (45%) with **verified command support**. This library aims to replace XML scripting with Python for better control and automation.
+PyRocrail currently implements **11 of ~22** runtime-controllable object types (50%) with **verified command support**. This library aims to replace XML scripting with Python for better control and automation.
 
 **Current Status:**
-- ✅ **State updates**: COMPLETE (9 object types, 100% coverage for implemented objects)
-- ✅ **Core objects**: 7 of 10 objects have 100% command coverage
+- ✅ **State updates**: COMPLETE (10 object types, 100% coverage for implemented objects)
+- ✅ **Core objects**: 8 of 11 objects have 100% command coverage
 - ✅ **Route parsing**: Switch/output/permission child elements
-- ✅ **Car/Operator/Schedule**: Rolling stock, train composition, and timetable support
-- ❌ **Missing**: 12+ object types (Turntable, Text, etc.)
+- ✅ **Car/Operator/Schedule/Stage**: Rolling stock, train composition, timetables, and staging yards
+- ❌ **Missing**: 11+ object types (Turntable, Text, etc.)
 
 **Recent Progress (2025-10-17):**
-- Implemented Car, Operator, and Schedule objects
+- Implemented Car, Operator, Schedule, and Stage objects
 - Car: 5 commands (630 messages in PCAP now handled!)
 - Operator: 4 commands (90 messages in PCAP now handled!)
 - Schedule: 3 commands (UNVERIFIED - not in official docs) + entry parsing
-- Implemented state update handling for all 9 major object types
+- Stage: 6 commands (staging yard management)
+- Implemented state update handling for all 10 major object types
 - Verified all commands against official XMLScript documentation
 - **Message handling: 89.9%** (2396 of 2666 messages)
 
@@ -50,15 +51,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
-### 1.3 Stage
-**Purpose**: Staging yard sections (fiddle yard)
-**Commands**: enter, exit, compress, expand
-**Use Case**: Hidden staging, fiddle yards
-**Priority**: MEDIUM
-
----
-
-### 1.4 Tour
+### 1.3 Tour
 **Purpose**: Automated tour sequences
 **Commands**: start, stop, reset
 **Use Case**: Demo mode, visitor presentations
@@ -66,7 +59,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
-### 1.5 Location
+### 1.4 Location
 **Purpose**: Geographic locations on layout
 **Commands**: Modify properties, state tracking
 **Use Case**: Station management, geography tracking
@@ -74,7 +67,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
-### 1.6 Analyser
+### 1.5 Analyser
 **Purpose**: Track analyser for decoder programming
 **Commands**: start, stop, readcv, writecv
 **Use Case**: Decoder programming, maintenance
@@ -82,7 +75,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
-### 1.7 Booster
+### 1.6 Booster
 **Purpose**: Power district/booster control
 **Commands**: on, off, status
 **Use Case**: Power management, short circuit handling
@@ -90,7 +83,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
-### 1.8 Link
+### 1.7 Link
 **Purpose**: Cross-references between objects
 **Commands**: activate, deactivate
 **Use Case**: Complex object relationships
@@ -98,7 +91,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
-### 1.9 Variable (var)
+### 1.8 Variable (var)
 **Purpose**: Global variables for scripting
 **Commands**: get, set, increment, decrement
 **Use Case**: State tracking in Python scripts
@@ -106,7 +99,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
-### 1.10 Selector Table (seltab)
+### 1.9 Selector Table (seltab)
 **Purpose**: Selection tables for routing
 **Commands**: select, next, previous
 **Use Case**: Complex routing decisions
@@ -114,7 +107,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
-### 1.11 Weather
+### 1.10 Weather
 **Purpose**: Weather effects control
 **Commands**: Set conditions, themes, lighting effects
 **Use Case**: Atmospheric effects, time-of-day simulation
@@ -326,6 +319,33 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
+### 2.11 Stage (`src/pyrocrail/objects/stage.py`) ✨ NEW
+
+**✅ Implemented Commands** (6 total - ✅ COMPLETE):
+- `compress()` - Advance trains to fill gaps in staging yard
+- `expand()` - Activate train in end section if exit is open
+- `open()` - Open staging block for entry
+- `close()` - Close staging block (no entry)
+- `free()` - Free the staging block
+- `go()` - Give go permission to train in staging block
+
+**✅ State Updates**: All stage attributes including state, entering, reserved, occupancy
+
+**Configuration Attributes**:
+- `state` - Current state (open/closed/etc.)
+- `entering`, `reserved` - Status flags
+- `totallength`, `totalsections` - Occupancy tracking
+- `slen`, `gap` - Section configuration
+- `fbenterid`, `entersignal`, `exitsignal` - Sensor and signal configuration
+- `waitmode`, `minwaittime`, `maxwaittime` - Wait time configuration
+- `exitspeed`, `stopspeed`, `speedpercent` - Speed settings
+- `usewd`, `wdsleep` - Watchdog configuration
+- `minocc`, `minoccsec` - Minimum occupancy settings
+
+**Coverage**: 100% of documented commands ✅
+
+---
+
 ## 3. Missing System-Level Features
 
 ### 3.1 System Commands (`src/pyrocrail/pyrocrail.py:53`)
@@ -389,8 +409,9 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 - ✅ Car state updates - Status, location, waybill ✨ NEW
 - ✅ Operator state updates - Locomotive, cars, cargo ✨ NEW
 - ✅ Schedule state updates - All attributes, entry list ✨ NEW
+- ✅ Stage block state updates - State, entering, reserved, occupancy ✨ NEW
 
-**Result**: 9 object types with complete state update handling
+**Result**: 10 object types with complete state update handling
 
 **PCAP Test Results**: 89.9% of messages handled (2396 of 2666 messages)
 
@@ -448,7 +469,7 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 | Category | Before | After | Coverage |
 |----------|--------|-------|----------|
-| **Object Types** | 7 | 10 | 45% (12 missing) |
+| **Object Types** | 7 | 11 | 50% (11 missing) |
 | **Locomotive Commands** | 7 | 11 | ✅ 11 verified |
 | **Block Commands** | 7 | 7 | ✅ 100% |
 | **Switch Commands** | 5 | 7 | ✅ 100% |
@@ -459,15 +480,16 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 | **Car Commands** | 0 | 5 | ✅ 100% ✨ NEW |
 | **Operator Commands** | 0 | 4 | ✅ 100% ✨ NEW |
 | **Schedule Commands** | 0 | 3 | ⚠️ UNVERIFIED ✨ NEW |
-| **State Updates** | 0% | 100% | ✅ 9 object types |
+| **Stage Commands** | 0 | 6 | ✅ 100% ✨ NEW |
+| **State Updates** | 0% | 100% | ✅ 10 object types |
 | **System Commands** | 6 | 6 | ~40% (10+ missing) |
 | **Model Queries** | 1 | 1 | ~11% (8+ missing) |
 
 **Overall Improvement**:
-- Commands: 39 → 60 (+21 commands, +54%)
-- Object types: 7 → 10 (+3 new types)
-- State updates: 0% → 100% (9 object types)
-- Objects with 100% verified command coverage: 0 → 7
+- Commands: 39 → 66 (+27 commands, +69%)
+- Object types: 7 → 11 (+4 new types)
+- State updates: 0% → 100% (10 object types)
+- Objects with 100% verified command coverage: 0 → 8
 - Objects with structure + unverified commands: 1 (Schedule)
 
 ---
@@ -475,13 +497,13 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 ## 6. Recommended Implementation Priority
 
 ### ✅ Phase 1 - COMPLETE (2025-10-17)
-1. ✅ **State update handling** - All 8 object types implemented
+1. ✅ **State update handling** - All 10 object types implemented
 2. ✅ **Route child elements** - Switch/output/permission parsing complete
 3. ✅ **Command verification** - All commands verified against XMLScript docs
 
 ### ✅ Phase 2 - COMPLETE (2025-10-17)
-1. ✅ **Car** - Rolling stock management (820 objects, 5 commands) ✨ NEW
-2. ✅ **Operator** - Train compositions (115 objects, 4 commands) ✨ NEW
+1. ✅ **Car** - Rolling stock management (630 objects, 5 commands) ✨ NEW
+2. ✅ **Operator** - Train compositions (90 objects, 4 commands) ✨ NEW
 
 ### ⚠️  Phase 3 - PARTIALLY COMPLETE (2025-10-17)
 1. ⚠️ **Schedule** - Timetable operations (structure complete, 3 UNVERIFIED commands) ✨ NEW
@@ -489,27 +511,32 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
    - Commands (start/stop/reset) NOT documented in XMLScript
    - Needs testing with real Rocrail server to verify commands
 
-### Phase 4 - Remaining High Priority Objects (CURRENT PRIORITY)
-1. **Turntable** - Engine facilities, common in layouts
+### ✅ Phase 4 - COMPLETE (2025-10-17)
+1. ✅ **Stage** - Staging yard management (6 commands) ✨ NEW
+   - compress/expand for train management
+   - open/close/free/go for state control
+   - Full state update support
 
-### Phase 5 - System Management
+### Phase 5 - Remaining High Priority Objects (CURRENT PRIORITY)
+1. **Turntable** - Engine facilities, common in layouts (waiting for command documentation)
+
+### Phase 6 - System Management
 2. **Model queries** - lcprops, add, remove, modify
 3. **System commands** - save, shutdown, sod, eod
-4. **Exception handling** - Parse <exception> messages (261 in PCAP)
+4. **Exception handling** - Parse <exception> messages (330 in PCAP)
 
-### Phase 6 - Specialized Objects
+### Phase 7 - Specialized Objects
 5. **Text** - Information displays
 6. **Analyser** - Decoder programming
 7. **Booster** - Power management
 8. **Variable** - Global variables
 
-### Phase 7 - Advanced Features
-9. **Stage** - Advanced staging yards
-10. **Tour** - Demo mode
-11. **Weather** - Atmospheric effects
-12. **Link** - Object relationships
-13. **Selector Table** - Complex routing
-14. **Location** - Geographic tracking
+### Phase 8 - Advanced Features
+9. **Tour** - Demo mode
+10. **Weather** - Atmospheric effects
+11. **Link** - Object relationships
+12. **Selector Table** - Complex routing
+13. **Location** - Geographic tracking
 
 ---
 

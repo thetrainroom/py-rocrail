@@ -12,6 +12,7 @@ from pyrocrail.objects.block import Block
 from pyrocrail.objects.car import Car
 from pyrocrail.objects.operator import Operator
 from pyrocrail.objects.schedule import Schedule
+from pyrocrail.objects.stage import Stage
 from pyrocrail.objects import set_attr
 from pyrocrail.communicator import Communicator
 
@@ -37,6 +38,7 @@ class Model:
         self._car_domain: dict[str, Car] = {}
         self._operator_domain: dict[str, Operator] = {}
         self._sc_domain: dict[str, Schedule] = {}
+        self._sb_domain: dict[str, Stage] = {}
         self.curr_time: float = 0.0
         self.clock: Clock = Clock()
         self.change_callback = None
@@ -83,6 +85,9 @@ class Model:
             elif child.tag == "sc":
                 # Schedule state update
                 self._update_sc(child)
+            elif child.tag == "sb":
+                # Stage block state update
+                self._update_sb(child)
             # TODO: Add output state update handler (co)
 
     def build(self, plan_xml: ET.Element):
@@ -107,6 +112,8 @@ class Model:
                 self._build_operator(child)
             elif child.tag == "sclist":
                 self._build_sc(child)
+            elif child.tag == "sblist":
+                self._build_sb(child)
         self.plan_recv = True
 
     def get_fb(self, label: str) -> Feedback:
@@ -138,6 +145,9 @@ class Model:
 
     def get_schedule(self, label: str) -> Schedule:
         return self._sc_domain[label]
+
+    def get_stage(self, label: str) -> Stage:
+        return self._sb_domain[label]
 
     def _recv_clock(self, tag: ET.Element):
         self.clock.hour = int(tag.attrib["hour"])
@@ -198,6 +208,11 @@ class Model:
         for child in sclist:
             sc = Schedule(child, self.communicator)
             self._sc_domain[sc.idx] = sc
+
+    def _build_sb(self, sblist: ET.Element):
+        for child in sblist:
+            sb = Stage(child, self.communicator)
+            self._sb_domain[sb.idx] = sb
 
     def _update_lc(self, lc_xml: ET.Element):
         """Update locomotive state from server"""
@@ -422,3 +437,31 @@ class Model:
         # Call change callback if registered
         if self.change_callback is not None:
             self.change_callback('sc', sc_id, sc)
+
+    def _update_sb(self, sb_xml: ET.Element):
+        """Update stage block state from server"""
+        sb_id = sb_xml.attrib.get('id')
+
+        if not sb_id:
+            print(f"Warning: Stage block update without id: {ET.tostring(sb_xml, encoding='unicode')[:100]}")
+            return
+
+        # Check if stage exists
+        if sb_id not in self._sb_domain:
+            print(f"Warning: Received update for unknown stage block: {sb_id}")
+            return
+
+        # Update stage attributes
+        sb = self._sb_domain[sb_id]
+        for attr, value in sb_xml.attrib.items():
+            if attr == 'id':
+                continue  # Don't overwrite the id
+            # Handle 'class' attribute specially (Python keyword)
+            if attr == 'class':
+                set_attr(sb, 'class_', value)
+            else:
+                set_attr(sb, attr, value)
+
+        # Call change callback if registered
+        if self.change_callback is not None:
+            self.change_callback('sb', sb_id, sb)

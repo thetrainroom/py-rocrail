@@ -51,12 +51,12 @@ def test_stage_loading():
     if len(model._sb_domain) > 0:
         print("\nTesting Stage methods:")
         sb = list(model._sb_domain.values())[0]
-        print(f"   - compress() method ready")
-        print(f"   - expand() method ready")
-        print(f"   - open() method ready")
-        print(f"   - close() method ready")
-        print(f"   - free() method ready")
-        print(f"   - go() method ready")
+        print("   - compress() method ready")
+        print("   - expand() method ready")
+        print("   - open() method ready")
+        print("   - close() method ready")
+        print("   - free() method ready")
+        print("   - go() method ready")
         print("\n   Commands verified from Rocrail wiki documentation.")
         print("   compress: advances trains to fill gaps")
         print("   expand: activates train in end section if exit is open")

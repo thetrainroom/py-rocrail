@@ -7,6 +7,7 @@ from pyrocrail.communicator import Communicator
 @dataclass
 class ScheduleEntry:
     """Schedule entry (stop/waypoint)"""
+
     block: str = ""  # Block ID
     hour: int = 0  # Departure hour
     minute: int = 0  # Departure minute
@@ -56,31 +57,31 @@ class Schedule:
 
     def build(self, sc_xml: ET.Element):
         """Build schedule object from XML element"""
-        self.idx = sc_xml.attrib['id']
+        self.idx = sc_xml.attrib["id"]
 
         for attr, value in sc_xml.attrib.items():
             # Handle 'class' attribute specially (Python keyword)
-            if attr == 'class':
-                set_attr(self, 'class_', value)
+            if attr == "class":
+                set_attr(self, "class_", value)
             else:
                 set_attr(self, attr, value)
 
         # Parse schedule entries
         for child in sc_xml:
-            if child.tag == 'scentry':
+            if child.tag == "scentry":
                 entry = ScheduleEntry(
-                    block=child.attrib.get('block', ''),
-                    hour=int(child.attrib.get('hour', '0')),
-                    minute=int(child.attrib.get('minute', '0')),
-                    ahour=int(child.attrib.get('ahour', '0')),
-                    aminute=int(child.attrib.get('aminute', '0')),
-                    minwait=int(child.attrib.get('minwait', '0')),
-                    regularstop=child.attrib.get('regularstop', 'true').lower() == 'true',
-                    swap=child.attrib.get('swap', 'false').lower() == 'true',
-                    free2go=child.attrib.get('free2go', 'false').lower() == 'true',
-                    blockexitside=int(child.attrib.get('blockexitside', '0')),
-                    indelay=int(child.attrib.get('indelay', '0')),
-                    departspeed=int(child.attrib.get('departspeed', '0'))
+                    block=child.attrib.get("block", ""),
+                    hour=int(child.attrib.get("hour", "0")),
+                    minute=int(child.attrib.get("minute", "0")),
+                    ahour=int(child.attrib.get("ahour", "0")),
+                    aminute=int(child.attrib.get("aminute", "0")),
+                    minwait=int(child.attrib.get("minwait", "0")),
+                    regularstop=child.attrib.get("regularstop", "true").lower() == "true",
+                    swap=child.attrib.get("swap", "false").lower() == "true",
+                    free2go=child.attrib.get("free2go", "false").lower() == "true",
+                    blockexitside=int(child.attrib.get("blockexitside", "0")),
+                    indelay=int(child.attrib.get("indelay", "0")),
+                    departspeed=int(child.attrib.get("departspeed", "0")),
                 )
                 self.entries.append(entry)
 

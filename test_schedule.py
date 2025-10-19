@@ -42,7 +42,7 @@ def test_schedule_loading():
         print(f"   - Entries: {len(sc.entries)}")
         if len(sc.entries) > 0:
             entry = sc.entries[0]
-            print(f"\n   First entry:")
+            print("\n   First entry:")
             print(f"     - Block: {entry.block}")
             print(f"     - Hour: {entry.hour}")
             print(f"     - Minute: {entry.minute}")
@@ -52,9 +52,9 @@ def test_schedule_loading():
     if len(model._sc_domain) > 0:
         print("\nTesting Schedule methods (UNVERIFIED commands):")
         sc = list(model._sc_domain.values())[0]
-        print(f"   - start() method ready (UNVERIFIED)")
-        print(f"   - stop() method ready (UNVERIFIED)")
-        print(f"   - reset() method ready (UNVERIFIED)")
+        print("   - start() method ready (UNVERIFIED)")
+        print("   - stop() method ready (UNVERIFIED)")
+        print("   - reset() method ready (UNVERIFIED)")
         print("\n   WARNING: These commands are not verified in XMLScript docs.")
         print("   They may not work with actual Rocrail servers.")
 

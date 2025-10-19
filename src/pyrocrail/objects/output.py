@@ -46,12 +46,12 @@ class Output:
             cmd = f'<co id="{self.idx}" state="{self.state}" value="{self.value}" valueoff="{self.valueoff}" iid="{self.iid}"/>'
 
         self.communicator.send("co", cmd)
-        
+
     def on(self):
         # TODO: Verify correct command format for turning output on
         cmd = f'<co id="{self.idx}" cmd="on"/>'
         self.communicator.send("co", cmd)
-        
+
     def off(self):
         # TODO: Verify correct command format for turning output off
         cmd = f'<co id="{self.idx}" cmd="off"/>'

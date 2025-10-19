@@ -50,7 +50,7 @@ class Communicator:
             return None
         else:
             r = self._byte_buffer[: pos + 1].decode("utf-8")
-            self._byte_buffer = self._byte_buffer[pos + 1:]
+            self._byte_buffer = self._byte_buffer[pos + 1 :]
 
         self.__buffer.extend(list(r.split("\n")))
         while "?xml" not in self.__buffer[0] and len(self.__buffer) > 0:

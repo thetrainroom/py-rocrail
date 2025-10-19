@@ -24,24 +24,24 @@ def test_feedback_state_updates():
         print(f"  Initial state: {fb.state if hasattr(fb, 'state') else 'unknown'}")
 
         # Inject state change message
-        print(f"\nInjecting state=true message...")
+        print("\nInjecting state=true message...")
         mock_com.inject_message(f'<fb id="{fb_id}" state="true"/>')
         time.sleep(0.1)
 
         print(f"  After true:  {fb.state if hasattr(fb, 'state') else 'unknown'}")
 
         # Inject state change to false
-        print(f"\nInjecting state=false message...")
+        print("\nInjecting state=false message...")
         mock_com.inject_message(f'<fb id="{fb_id}" state="false"/>')
         time.sleep(0.1)
 
         print(f"  After false: {fb.state if hasattr(fb, 'state') else 'unknown'}")
 
         if hasattr(fb, 'state'):
-            print(f"\n[OK] Feedback sensor state is being updated!")
+            print("\n[OK] Feedback sensor state is being updated!")
             return True
         else:
-            print(f"\n[FAIL] Feedback sensor has no state attribute")
+            print("\n[FAIL] Feedback sensor has no state attribute")
             return False
     else:
         print("\n[SKIP] No feedback sensors in PCAP")
@@ -67,31 +67,31 @@ def test_locomotive_state_updates():
         print(f"  Initial speed: {lc.V if hasattr(lc, 'V') else 'unknown'}")
 
         # Inject speed change message
-        print(f"\nInjecting V=50 message...")
+        print("\nInjecting V=50 message...")
         mock_com.inject_message(f'<lc id="{lc_id}" V="50"/>')
         time.sleep(0.1)
 
         print(f"  After V=50:  {lc.V if hasattr(lc, 'V') else 'unknown'}")
 
         # Inject another speed change
-        print(f"\nInjecting V=80 message...")
+        print("\nInjecting V=80 message...")
         mock_com.inject_message(f'<lc id="{lc_id}" V="80"/>')
         time.sleep(0.1)
 
         print(f"  After V=80:  {lc.V if hasattr(lc, 'V') else 'unknown'}")
 
         # Inject direction change
-        print(f"\nInjecting dir=false (reverse) message...")
+        print("\nInjecting dir=false (reverse) message...")
         mock_com.inject_message(f'<lc id="{lc_id}" dir="false"/>')
         time.sleep(0.1)
 
         print(f"  Direction: {lc.dir if hasattr(lc, 'dir') else 'unknown'}")
 
         if hasattr(lc, 'V'):
-            print(f"\n[OK] Locomotive state is being updated!")
+            print("\n[OK] Locomotive state is being updated!")
             return True
         else:
-            print(f"\n[FAIL] Locomotive has no V attribute")
+            print("\n[FAIL] Locomotive has no V attribute")
             return False
     else:
         print("\n[SKIP] No locomotives in PCAP")
@@ -118,19 +118,19 @@ def test_block_state_updates():
         print(f"  Reserved: {bk.reserved if hasattr(bk, 'reserved') else 'unknown'}")
 
         # Inject state change
-        print(f"\nInjecting state=closed, reserved=true message...")
+        print("\nInjecting state=closed, reserved=true message...")
         mock_com.inject_message(f'<bk id="{bk_id}" state="closed" reserved="true"/>')
         time.sleep(0.1)
 
-        print(f"  After update:")
+        print("  After update:")
         print(f"    State: {bk.state if hasattr(bk, 'state') else 'unknown'}")
         print(f"    Reserved: {bk.reserved if hasattr(bk, 'reserved') else 'unknown'}")
 
         if hasattr(bk, 'state'):
-            print(f"\n[OK] Block state is being updated!")
+            print("\n[OK] Block state is being updated!")
             return True
         else:
-            print(f"\n[FAIL] Block has no state attribute")
+            print("\n[FAIL] Block has no state attribute")
             return False
     else:
         print("\n[SKIP] No blocks in PCAP")
@@ -156,24 +156,24 @@ def test_switch_state_updates():
         print(f"  Initial state: {sw.state if hasattr(sw, 'state') else 'unknown'}")
 
         # Inject state change to turnout
-        print(f"\nInjecting state=turnout message...")
+        print("\nInjecting state=turnout message...")
         mock_com.inject_message(f'<sw id="{sw_id}" state="turnout"/>')
         time.sleep(0.1)
 
         print(f"  After turnout: {sw.state if hasattr(sw, 'state') else 'unknown'}")
 
         # Inject state change to straight
-        print(f"\nInjecting state=straight message...")
+        print("\nInjecting state=straight message...")
         mock_com.inject_message(f'<sw id="{sw_id}" state="straight"/>')
         time.sleep(0.1)
 
         print(f"  After straight: {sw.state if hasattr(sw, 'state') else 'unknown'}")
 
         if hasattr(sw, 'state'):
-            print(f"\n[OK] Switch state is being updated!")
+            print("\n[OK] Switch state is being updated!")
             return True
         else:
-            print(f"\n[FAIL] Switch has no state attribute")
+            print("\n[FAIL] Switch has no state attribute")
             return False
     else:
         print("\n[SKIP] No switches in PCAP")
@@ -199,17 +199,17 @@ def test_multiple_attribute_updates():
         print(f"  Before: V={getattr(lc, 'V', '?')}, dir={getattr(lc, 'dir', '?')}, lights={getattr(lc, 'lights', '?')}")
 
         # Inject message with multiple attributes
-        print(f"\nInjecting message with V=60, dir=false, lights=true...")
+        print("\nInjecting message with V=60, dir=false, lights=true...")
         mock_com.inject_message(f'<lc id="{lc_id}" V="60" dir="false" lights="true"/>')
         time.sleep(0.1)
 
         print(f"  After:  V={getattr(lc, 'V', '?')}, dir={getattr(lc, 'dir', '?')}, lights={getattr(lc, 'lights', '?')}")
 
         if hasattr(lc, 'V'):
-            print(f"\n[OK] Multiple attributes updated in single message!")
+            print("\n[OK] Multiple attributes updated in single message!")
             return True
         else:
-            print(f"\n[FAIL] Update failed")
+            print("\n[FAIL] Update failed")
             return False
     else:
         print("\n[SKIP] No locomotives in PCAP")

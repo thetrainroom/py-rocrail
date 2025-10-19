@@ -118,22 +118,22 @@ class Model:
 
     def get_fb(self, label: str) -> Feedback:
         return self._fb_domain[label]
-        
+
     def get_co(self, label: str) -> Output:
         return self._co_domain[label]
-        
+
     def get_lc(self, label: str) -> Locomotive:
         return self._lc_domain[label]
-        
+
     def get_sw(self, label: str) -> Switch:
         return self._sw_domain[label]
-        
+
     def get_sg(self, label: str) -> Signal:
         return self._sg_domain[label]
-        
+
     def get_st(self, label: str) -> Route:
         return self._st_domain[label]
-        
+
     def get_bk(self, label: str) -> Block:
         return self._bk_domain[label]
 
@@ -167,28 +167,28 @@ class Model:
         for child in fblist:
             fb = Feedback(child, self.communicator)
             self._fb_domain[fb.idx] = fb
-            
+
     def _build_lc(self, lclist: ET.Element):
         for child in lclist:
             lc = Locomotive(child, self.communicator)
             self._lc_domain[lc.idx] = lc
-            
+
     def _build_sw(self, swlist: ET.Element):
         for child in swlist:
             # TODO: Determine if this should be a ThreeWaySwitch based on XML attributes
             sw = Switch(child, self.communicator)
             self._sw_domain[sw.idx] = sw
-            
+
     def _build_sg(self, sglist: ET.Element):
         for child in sglist:
             sg = Signal(child, self.communicator)
             self._sg_domain[sg.idx] = sg
-            
+
     def _build_st(self, stlist: ET.Element):
         for child in stlist:
             st = Route(child, self.communicator)
             self._st_domain[st.idx] = st
-            
+
     def _build_bk(self, bklist: ET.Element):
         for child in bklist:
             bk = Block(child, self.communicator)
@@ -216,7 +216,7 @@ class Model:
 
     def _update_lc(self, lc_xml: ET.Element):
         """Update locomotive state from server"""
-        lc_id = lc_xml.attrib.get('id')
+        lc_id = lc_xml.attrib.get("id")
 
         if not lc_id:
             print(f"Warning: Locomotive update without id: {ET.tostring(lc_xml, encoding='unicode')[:100]}")
@@ -230,17 +230,17 @@ class Model:
         # Update locomotive attributes
         lc = self._lc_domain[lc_id]
         for attr, value in lc_xml.attrib.items():
-            if attr == 'id':
+            if attr == "id":
                 continue  # Don't overwrite the id
             set_attr(lc, attr, value)
 
         # Call change callback if registered
         if self.change_callback is not None:
-            self.change_callback('lc', lc_id, lc)
+            self.change_callback("lc", lc_id, lc)
 
     def _update_fb(self, fb_xml: ET.Element):
         """Update feedback sensor state from server"""
-        fb_id = fb_xml.attrib.get('id')
+        fb_id = fb_xml.attrib.get("id")
 
         if not fb_id:
             print(f"Warning: Feedback update without id: {ET.tostring(fb_xml, encoding='unicode')[:100]}")
@@ -254,17 +254,17 @@ class Model:
         # Update feedback attributes
         fb = self._fb_domain[fb_id]
         for attr, value in fb_xml.attrib.items():
-            if attr == 'id':
+            if attr == "id":
                 continue  # Don't overwrite the id
             set_attr(fb, attr, value)
 
         # Call change callback if registered
         if self.change_callback is not None:
-            self.change_callback('fb', fb_id, fb)
+            self.change_callback("fb", fb_id, fb)
 
     def _update_bk(self, bk_xml: ET.Element):
         """Update block state from server"""
-        bk_id = bk_xml.attrib.get('id')
+        bk_id = bk_xml.attrib.get("id")
 
         if not bk_id:
             print(f"Warning: Block update without id: {ET.tostring(bk_xml, encoding='unicode')[:100]}")
@@ -278,17 +278,17 @@ class Model:
         # Update block attributes
         bk = self._bk_domain[bk_id]
         for attr, value in bk_xml.attrib.items():
-            if attr == 'id':
+            if attr == "id":
                 continue  # Don't overwrite the id
             set_attr(bk, attr, value)
 
         # Call change callback if registered
         if self.change_callback is not None:
-            self.change_callback('bk', bk_id, bk)
+            self.change_callback("bk", bk_id, bk)
 
     def _update_sw(self, sw_xml: ET.Element):
         """Update switch state from server"""
-        sw_id = sw_xml.attrib.get('id')
+        sw_id = sw_xml.attrib.get("id")
 
         if not sw_id:
             print(f"Warning: Switch update without id: {ET.tostring(sw_xml, encoding='unicode')[:100]}")
@@ -302,17 +302,17 @@ class Model:
         # Update switch attributes
         sw = self._sw_domain[sw_id]
         for attr, value in sw_xml.attrib.items():
-            if attr == 'id':
+            if attr == "id":
                 continue  # Don't overwrite the id
             set_attr(sw, attr, value)
 
         # Call change callback if registered
         if self.change_callback is not None:
-            self.change_callback('sw', sw_id, sw)
+            self.change_callback("sw", sw_id, sw)
 
     def _update_sg(self, sg_xml: ET.Element):
         """Update signal state from server"""
-        sg_id = sg_xml.attrib.get('id')
+        sg_id = sg_xml.attrib.get("id")
 
         if not sg_id:
             print(f"Warning: Signal update without id: {ET.tostring(sg_xml, encoding='unicode')[:100]}")
@@ -326,17 +326,17 @@ class Model:
         # Update signal attributes
         sg = self._sg_domain[sg_id]
         for attr, value in sg_xml.attrib.items():
-            if attr == 'id':
+            if attr == "id":
                 continue  # Don't overwrite the id
             set_attr(sg, attr, value)
 
         # Call change callback if registered
         if self.change_callback is not None:
-            self.change_callback('sg', sg_id, sg)
+            self.change_callback("sg", sg_id, sg)
 
     def _update_st(self, st_xml: ET.Element):
         """Update route state from server"""
-        st_id = st_xml.attrib.get('id')
+        st_id = st_xml.attrib.get("id")
 
         if not st_id:
             print(f"Warning: Route update without id: {ET.tostring(st_xml, encoding='unicode')[:100]}")
@@ -350,17 +350,17 @@ class Model:
         # Update route attributes
         st = self._st_domain[st_id]
         for attr, value in st_xml.attrib.items():
-            if attr == 'id':
+            if attr == "id":
                 continue  # Don't overwrite the id
             set_attr(st, attr, value)
 
         # Call change callback if registered
         if self.change_callback is not None:
-            self.change_callback('st', st_id, st)
+            self.change_callback("st", st_id, st)
 
     def _update_car(self, car_xml: ET.Element):
         """Update car state from server"""
-        car_id = car_xml.attrib.get('id')
+        car_id = car_xml.attrib.get("id")
 
         if not car_id:
             print(f"Warning: Car update without id: {ET.tostring(car_xml, encoding='unicode')[:100]}")
@@ -374,17 +374,17 @@ class Model:
         # Update car attributes
         car = self._car_domain[car_id]
         for attr, value in car_xml.attrib.items():
-            if attr == 'id':
+            if attr == "id":
                 continue  # Don't overwrite the id
             set_attr(car, attr, value)
 
         # Call change callback if registered
         if self.change_callback is not None:
-            self.change_callback('car', car_id, car)
+            self.change_callback("car", car_id, car)
 
     def _update_operator(self, operator_xml: ET.Element):
         """Update operator state from server"""
-        operator_id = operator_xml.attrib.get('id')
+        operator_id = operator_xml.attrib.get("id")
 
         if not operator_id:
             print(f"Warning: Operator update without id: {ET.tostring(operator_xml, encoding='unicode')[:100]}")
@@ -398,21 +398,21 @@ class Model:
         # Update operator attributes
         opr = self._operator_domain[operator_id]
         for attr, value in operator_xml.attrib.items():
-            if attr == 'id':
+            if attr == "id":
                 continue  # Don't overwrite the id
             # Handle 'class' attribute specially (Python keyword)
-            if attr == 'class':
-                set_attr(opr, 'class_', value)
+            if attr == "class":
+                set_attr(opr, "class_", value)
             else:
                 set_attr(opr, attr, value)
 
         # Call change callback if registered
         if self.change_callback is not None:
-            self.change_callback('operator', operator_id, opr)
+            self.change_callback("operator", operator_id, opr)
 
     def _update_sc(self, sc_xml: ET.Element):
         """Update schedule state from server"""
-        sc_id = sc_xml.attrib.get('id')
+        sc_id = sc_xml.attrib.get("id")
 
         if not sc_id:
             print(f"Warning: Schedule update without id: {ET.tostring(sc_xml, encoding='unicode')[:100]}")
@@ -426,21 +426,21 @@ class Model:
         # Update schedule attributes
         sc = self._sc_domain[sc_id]
         for attr, value in sc_xml.attrib.items():
-            if attr == 'id':
+            if attr == "id":
                 continue  # Don't overwrite the id
             # Handle 'class' attribute specially (Python keyword)
-            if attr == 'class':
-                set_attr(sc, 'class_', value)
+            if attr == "class":
+                set_attr(sc, "class_", value)
             else:
                 set_attr(sc, attr, value)
 
         # Call change callback if registered
         if self.change_callback is not None:
-            self.change_callback('sc', sc_id, sc)
+            self.change_callback("sc", sc_id, sc)
 
     def _update_sb(self, sb_xml: ET.Element):
         """Update stage block state from server"""
-        sb_id = sb_xml.attrib.get('id')
+        sb_id = sb_xml.attrib.get("id")
 
         if not sb_id:
             print(f"Warning: Stage block update without id: {ET.tostring(sb_xml, encoding='unicode')[:100]}")
@@ -454,14 +454,14 @@ class Model:
         # Update stage attributes
         sb = self._sb_domain[sb_id]
         for attr, value in sb_xml.attrib.items():
-            if attr == 'id':
+            if attr == "id":
                 continue  # Don't overwrite the id
             # Handle 'class' attribute specially (Python keyword)
-            if attr == 'class':
-                set_attr(sb, 'class_', value)
+            if attr == "class":
+                set_attr(sb, "class_", value)
             else:
                 set_attr(sb, attr, value)
 
         # Call change callback if registered
         if self.change_callback is not None:
-            self.change_callback('sb', sb_id, sb)
+            self.change_callback("sb", sb_id, sb)

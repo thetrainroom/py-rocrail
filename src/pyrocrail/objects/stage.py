@@ -80,12 +80,12 @@ class Stage:
 
     def build(self, sb_xml: ET.Element):
         """Build stage object from XML element"""
-        self.idx = sb_xml.attrib['id']
+        self.idx = sb_xml.attrib["id"]
 
         for attr, value in sb_xml.attrib.items():
             # Handle 'class' attribute specially (Python keyword)
-            if attr == 'class':
-                set_attr(self, 'class_', value)
+            if attr == "class":
+                set_attr(self, "class_", value)
             else:
                 set_attr(self, attr, value)
 

@@ -11,10 +11,20 @@ from .objects.block import Block
 from .objects.action import ActionCtrl
 
 __all__ = [
-    "PyRocrail", "Action", "Trigger",
-    "Model", "Clock",
-    "Communicator", 
-    "Feedback", "Output", "Color",
-    "Locomotive", "Switch", "ThreeWaySwitch",
-    "Signal", "Route", "Block", "ActionCtrl"
+    "PyRocrail",
+    "Action",
+    "Trigger",
+    "Model",
+    "Clock",
+    "Communicator",
+    "Feedback",
+    "Output",
+    "Color",
+    "Locomotive",
+    "Switch",
+    "ThreeWaySwitch",
+    "Signal",
+    "Route",
+    "Block",
+    "ActionCtrl",
 ]

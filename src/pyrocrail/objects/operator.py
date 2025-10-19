@@ -33,11 +33,11 @@ class Operator:
 
     def build(self, opr_xml: ET.Element):
         """Build operator object from XML element"""
-        self.idx = opr_xml.attrib['id']
+        self.idx = opr_xml.attrib["id"]
         for attr, value in opr_xml.attrib.items():
             # Handle 'class' attribute specially (Python keyword)
-            if attr == 'class':
-                set_attr(self, 'class_', value)
+            if attr == "class":
+                set_attr(self, "class_", value)
             else:
                 set_attr(self, attr, value)
 
@@ -83,7 +83,7 @@ class Operator:
         self.communicator.send("operator", cmd)
         # Update the carids list (remove cars)
         if self.carids:
-            car_list = self.carids.split(',')
-            cars_to_remove = car_ids.split(',')
+            car_list = self.carids.split(",")
+            cars_to_remove = car_ids.split(",")
             car_list = [c for c in car_list if c not in cars_to_remove]
-            self.carids = ','.join(car_list)
+            self.carids = ",".join(car_list)

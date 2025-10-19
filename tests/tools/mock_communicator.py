@@ -249,9 +249,6 @@ def create_mock_pyrocrail(pcap_txt_file: str = "tests/fixtures/pcap/rocrail_star
     pr.com = mock_com
     pr.model.communicator = mock_com
 
-    # Override model.init to use PCAP replay
-    original_init = pr.model.init
-
     # Set decode callback immediately
     mock_com.decode_callback = pr.model.decode
 

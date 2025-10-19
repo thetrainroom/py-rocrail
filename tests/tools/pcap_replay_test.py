@@ -15,7 +15,7 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from collections import Counter, defaultdict
-from typing import Dict, List
+from typing import List
 
 
 class MessageStats:
@@ -460,7 +460,7 @@ def main():
 
     # Replay through mock model
     stats = MessageStats()
-    model = replay_messages(messages, stats)
+    replay_messages(messages, stats)
 
     # Print results
     stats.print_summary()

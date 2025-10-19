@@ -49,20 +49,20 @@ def test_car_operator_loading():
     if len(model._car_domain) > 0:
         print("\nTesting Car commands:")
         car = list(model._car_domain.values())[0]
-        print(f"   - empty() command ready")
-        print(f"   - loaded() command ready")
-        print(f"   - maintenance() command ready")
-        print(f"   - assign_waybill() command ready")
-        print(f"   - reset_waybill() command ready")
+        print("   - empty() command ready")
+        print("   - loaded() command ready")
+        print("   - maintenance() command ready")
+        print("   - assign_waybill() command ready")
+        print("   - reset_waybill() command ready")
 
     # Test operator commands
     if len(model._operator_domain) > 0:
         print("\nTesting Operator commands:")
         opr = list(model._operator_domain.values())[0]
-        print(f"   - empty_car() command ready")
-        print(f"   - load_car() command ready")
-        print(f"   - add_car() command ready")
-        print(f"   - leave_car() command ready")
+        print("   - empty_car() command ready")
+        print("   - load_car() command ready")
+        print("   - add_car() command ready")
+        print("   - leave_car() command ready")
 
     print("\nAll tests passed!")
     return True

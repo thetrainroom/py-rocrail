@@ -23,7 +23,7 @@ def test_basic_pcap_replay():
     pr.model.init()  # Loads from PCAP
 
     # Check what was loaded
-    print(f"\nModel loaded from PCAP:")
+    print("\nModel loaded from PCAP:")
     print(f"  Feedback sensors: {len(pr.model._fb_domain)}")
     print(f"  Outputs: {len(pr.model._co_domain)}")
     print(f"  Locomotives: {len(pr.model._lc_domain)}")
@@ -174,7 +174,7 @@ def test_action_with_pcap_model():
             'blocks': len(model._bk_domain),
         }
 
-        print(f"\n  === Hourly Report ===")
+        print("\n  === Hourly Report ===")
         print(f"  Time: {report['time']}")
         print(f"  Locomotives: {report['locomotives']}")
         print(f"  Sensors: {report['sensors']}")
@@ -190,7 +190,7 @@ def test_action_with_pcap_model():
         if active_locos:
             print(f"  Active trains: {', '.join(active_locos)}")
         else:
-            print(f"  Active trains: None")
+            print("  Active trains: None")
 
         return report
 
@@ -216,7 +216,7 @@ def test_action_with_pcap_model():
     pr.__clean_thread.join(timeout=1.0)
 
     if len(results) == 1:
-        print(f"\n[OK] Action executed successfully")
+        print("\n[OK] Action executed successfully")
         print(f"  Report data: {results[0]}")
         return True
     else:

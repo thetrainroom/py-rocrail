@@ -15,7 +15,16 @@ class Trigger(Enum):
 
 
 class Action:
-    def __init__(self, script: Callable, trigger_type: Trigger = Trigger.TIME, trigger: str | None = None, condition: str = "", timeout: int | float = 60, on_success: Callable | None = None, on_error: Callable | None = None):
+    def __init__(
+        self,
+        script: Callable,
+        trigger_type: Trigger = Trigger.TIME,
+        trigger: str | None = None,
+        condition: str = "",
+        timeout: int | float = 60,
+        on_success: Callable | None = None,
+        on_error: Callable | None = None,
+    ):
         """Create an action with trigger pattern and condition.
 
         Args:
@@ -47,7 +56,7 @@ class Action:
         self.on_error = on_error
         self._start_time = 0.0
         self._last_execution = None  # Track last execution time to avoid duplicates
-        self.name = script.__name__ if hasattr(script, '__name__') else "anonymous"  # For logging
+        self.name = script.__name__ if hasattr(script, "__name__") else "anonymous"  # For logging
 
 
 class PyRocrail:
@@ -77,28 +86,28 @@ class PyRocrail:
         if self.__clean_thread is not None:
             self.__clean_thread.join()
         self.com.stop()
-        
+
     def power_on(self):
         """Turn system power on"""
         self.com.send("sys", '<sys cmd="go"/>')
-        
+
     def power_off(self):
         """Turn system power off"""
         self.com.send("sys", '<sys cmd="stop"/>')
-        
+
     def emergency_stop(self):
         """Emergency stop all trains"""
         # TODO: Verify emergency stop command format
         self.com.send("sys", '<sys cmd="ebreak"/>')
-        
+
     def auto_on(self):
         """Enable automatic mode"""
         self.com.send("auto", '<auto cmd="on"/>')
-        
+
     def auto_off(self):
         """Disable automatic mode"""
         self.com.send("auto", '<auto cmd="off"/>')
-        
+
     def reset(self):
         """Reset the system"""
         # TODO: Verify reset command format
@@ -200,15 +209,15 @@ class PyRocrail:
         try:
             # Create limited scope with safe variables
             scope = {
-                'hour': hour,
-                'minute': minute,
-                'time': hour + minute / 60.0,
-                'model': model,
+                "hour": hour,
+                "minute": minute,
+                "time": hour + minute / 60.0,
+                "model": model,
                 # Add some safe builtins
-                'abs': abs,
-                'min': min,
-                'max': max,
-                'len': len,
+                "abs": abs,
+                "min": min,
+                "max": max,
+                "len": len,
             }
             # Evaluate expression in restricted scope
             result = eval(condition, {"__builtins__": {}}, scope)
@@ -281,20 +290,20 @@ class PyRocrail:
             if ac.condition:
                 try:
                     scope = {
-                        'obj_type': obj_type,
-                        'obj_id': obj_id,
-                        'obj': obj,
-                        'model': self.model,
-                        'hour': self.model.clock.hour,
-                        'minute': self.model.clock.minute,
-                        'time': self.model.clock.hour + self.model.clock.minute / 60.0,
+                        "obj_type": obj_type,
+                        "obj_id": obj_id,
+                        "obj": obj,
+                        "model": self.model,
+                        "hour": self.model.clock.hour,
+                        "minute": self.model.clock.minute,
+                        "time": self.model.clock.hour + self.model.clock.minute / 60.0,
                         # Safe builtins
-                        'abs': abs,
-                        'min': min,
-                        'max': max,
-                        'len': len,
-                        'hasattr': hasattr,
-                        'getattr': getattr,
+                        "abs": abs,
+                        "min": min,
+                        "max": max,
+                        "len": len,
+                        "hasattr": hasattr,
+                        "getattr": getattr,
                     }
                     result = eval(ac.condition, {"__builtins__": {}}, scope)
                     if not result:

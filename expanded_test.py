@@ -251,7 +251,7 @@ def run_comprehensive_test():
         time.sleep(3)
         
         # Print layout summary
-        print(f"\nLayout Summary:")
+        print("\nLayout Summary:")
         print(f"  - Locomotives: {len(rocrail.model._lc_domain)}")
         print(f"  - Switches: {len(rocrail.model._sw_domain)}")
         print(f"  - Blocks: {len(rocrail.model._bk_domain)}")

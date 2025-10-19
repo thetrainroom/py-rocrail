@@ -36,7 +36,7 @@ class Car:
 
     def build(self, car_xml: ET.Element):
         """Build car object from XML element"""
-        self.idx = car_xml.attrib['id']
+        self.idx = car_xml.attrib["id"]
         for attr, value in car_xml.attrib.items():
             set_attr(self, attr, value)
 

@@ -72,7 +72,7 @@ def test_success_callback():
     if len(results) == 1:
         callback_type, data, elapsed = results[0]
         if callback_type == 'success':
-            print(f"[OK] Success callback invoked")
+            print("[OK] Success callback invoked")
             print(f"  Result: {data}")
             print(f"  Time: {elapsed:.2f}s")
             return True
@@ -145,7 +145,7 @@ def test_error_callback():
     if len(results) == 1:
         callback_type, data, elapsed = results[0]
         if callback_type == 'error':
-            print(f"[OK] Error callback invoked")
+            print("[OK] Error callback invoked")
             print(f"  Exception: {data}")
             print(f"  Time: {elapsed:.2f}s")
             return True
@@ -218,7 +218,7 @@ def test_timeout_callback():
     if len(results) >= 1:
         callback_type, data, elapsed = results[0]
         if callback_type == 'timeout':
-            print(f"[OK] Timeout error callback invoked")
+            print("[OK] Timeout error callback invoked")
             print(f"  Exception: {data}")
             print(f"  Time: {elapsed:.2f}s")
             return True
@@ -226,7 +226,7 @@ def test_timeout_callback():
             print(f"[FAIL] Wrong callback type: {callback_type}")
             return False
     else:
-        print(f"[FAIL] No callbacks invoked")
+        print("[FAIL] No callbacks invoked")
         return False
 
 

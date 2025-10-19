@@ -42,12 +42,11 @@ def test_pcap_file(pcap_path: str):
         if len(pr.model._fb_domain) > 0:
             fb_id = list(pr.model._fb_domain.keys())[0]
             fb = pr.model._fb_domain[fb_id]
-            initial_state = getattr(fb, 'state', None)
 
             mock_com.inject_message(f'<fb id="{fb_id}" state="true"/>')
             time.sleep(0.05)
 
-            if hasattr(fb, 'state') and fb.state == True:
+            if hasattr(fb, 'state') and fb.state:
                 print(f"\n[OK] State updates work (tested with {fb_id})")
             else:
                 print(f"\n[FAIL] State update failed for {fb_id}")

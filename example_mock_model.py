@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Examples of different mocking approaches"""
 
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock
 from pyrocrail.pyrocrail import PyRocrail, Action, Trigger
 
 

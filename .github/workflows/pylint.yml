@@ -19,7 +19,13 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install ruff
+        pip install ruff scapy
+    - name: Extract PCAP fixtures
+      run: |
+        python tests/tools/pcap_parser.py tests/fixtures/pcap/rocrail_start.pcapng
+        python tests/tools/pcap_parser.py tests/fixtures/pcap/rocrail_fahren.pcapng
+        python tests/tools/pcap_parser.py tests/fixtures/pcap/rocrail_schalten.pcapng
+        python tests/tools/pcap_parser.py tests/fixtures/pcap/rocrail_edit.pcapng
     - name: Analysing the code with ruff
       run: |
         ruff check $(git ls-files '*.py')

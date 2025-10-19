@@ -350,12 +350,14 @@ class PyRocrail:
                     exp = future.exception(timeout=0)
                     if exp:
                         # Action failed
-                        print(f"Action '{action.name if action else 'unknown'}' failed: {repr(exp)}")
                         if action and action.on_error:
                             try:
                                 action.on_error(exp, elapsed)
                             except Exception as callback_err:
                                 print(f"  Error callback failed: {repr(callback_err)}")
+                        else:
+                            # Only print if no callback registered
+                            print(f"Action '{action.name if action else 'unknown'}' failed: {repr(exp)}")
                     else:
                         # Action succeeded
                         result = future.result()
@@ -369,13 +371,15 @@ class PyRocrail:
                 # Check timeout
                 elapsed = time.monotonic() - start_time
                 if elapsed > timeout:
-                    print(f"Warning: Action '{action.name if action else 'unknown'}' timeout after {elapsed:.1f}s (limit: {timeout}s)")
                     future.cancel()
                     if action and action.on_error:
                         try:
                             action.on_error(TimeoutError(f"Timeout after {elapsed:.1f}s"), elapsed)
                         except Exception as callback_err:
                             print(f"  Error callback failed: {repr(callback_err)}")
+                    else:
+                        # Only print if no callback registered
+                        print(f"Warning: Action '{action.name if action else 'unknown'}' timeout after {elapsed:.1f}s (limit: {timeout}s)")
                     continue
 
                 # Still running, put back in queue

@@ -8,6 +8,8 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.12"]
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}

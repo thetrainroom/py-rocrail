@@ -28,13 +28,14 @@ class Output:
 
     def build(self, co: ET.Element):
         self.idx = co.attrib["id"]
+        self.color = None  # Initialize color attribute
         for attr, value in co.attrib.items():
             if attr == "id":
                 continue
             set_attr(self, attr, value)
         for sub in co:
             if sub.tag == "color":
-                co.color = Color(**sub.attrib)
+                self.color = Color(**sub.attrib)
 
     def xml(self):
         # TODO: Verify exact XML format for output control commands

@@ -176,7 +176,7 @@ def test_automode_multi():
         pr.model._fb_domain[dest_e].on()
         time.sleep(0.5)
 
-        print(f"STOP COMMAND - before entering destination block")
+        print("STOP COMMAND - before entering destination block")
         loco.stop()
         time.sleep(1)
 
@@ -184,7 +184,7 @@ def test_automode_multi():
         final_speed = getattr(loco, 'V')
         final_mode = getattr(loco, 'mode')
 
-        print(f"\nState after stop:")
+        print("\nState after stop:")
         print(f"  Block: {final_block} (should still be {current_block})")
         print(f"  Speed: {final_speed} (should be 0)")
         print(f"  Mode: {final_mode}")
@@ -195,7 +195,7 @@ def test_automode_multi():
             print(f"(INFO) Locomotive ended up in {final_block}")
 
         # Complete the movement by triggering IN sensor
-        print(f"\nCompleting movement to finish the run...")
+        print("\nCompleting movement to finish the run...")
         print(f"Trigger {current_i} OFF")
         pr.model._fb_domain[current_i].off()
         time.sleep(0.5)

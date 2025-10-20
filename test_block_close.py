@@ -68,7 +68,7 @@ def test_block_close():
     time.sleep(2)
 
     bk = pr.model._bk_domain['cb1']
-    print(f"\ncb1 after OPEN:")
+    print("\ncb1 after OPEN:")
     print(f"  state: {getattr(bk, 'state', 'unknown')}")
     print(f"  is_closed(): {bk.is_closed()}")
 

@@ -90,11 +90,11 @@ def test_feedback_sensors():
 
     print(f"\nBefore: {test_fb_id} state={test_fb.state}")
 
-    print(f"Calling .on() first time...")
+    print("Calling .on() first time...")
     test_fb.on()
     print(f"After first call: state={test_fb.state}")
 
-    print(f"Calling .on() second time immediately...")
+    print("Calling .on() second time immediately...")
     test_fb.on()
     print(f"After second call: state={test_fb.state}")
     print("(Note: Second call won't send command because state is already True)")

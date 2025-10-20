@@ -17,10 +17,12 @@ typeCheckingMode = "strict"
 
 [tool.ruff]
 exclude = []
-select = ["E", "F", "N"]
 line-length = 5000 # Enforce with black formatter instead of ruff
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "N"]
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 
 [tool.poetry]

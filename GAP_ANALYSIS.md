@@ -11,18 +11,21 @@ PyRocrail currently implements **11 of ~22** runtime-controllable object types (
 - ✅ **State updates**: COMPLETE (10 object types, 100% coverage for implemented objects)
 - ✅ **Core objects**: 8 of 11 objects have 100% command coverage
 - ✅ **System commands**: COMPLETE (16/16, 100% coverage) ✨ NEW (2025-10-20)
+- ✅ **Model queries**: COMPLETE (9/9, 100% coverage) ✨ NEW (2025-10-20)
 - ✅ **Route parsing**: Switch/output/permission child elements
 - ✅ **Car/Operator/Schedule/Stage**: Rolling stock, train composition, timetables, and staging yards
-- ❌ **Missing**: 11+ object types (Turntable, Text, etc.)
-- ❌ **Missing**: Model queries (add, remove, modify, etc.)
+- ❌ **Missing**: 11+ object types (Turntable, Text, Analyser, Booster, Variable, etc.)
 
 **Recent Progress (2025-10-20):**
 - ✅ Implemented all 10 missing system commands (100% coverage)
+- ✅ Implemented all 8 missing model queries (100% coverage)
 - ✅ Clock control: set_clock(hour, minute, divider, freeze)
 - ✅ Session management: start_of_day(), end_of_day()
 - ✅ System operations: save(), shutdown(), query(), update_ini()
 - ✅ Custom events: fire_event(event_id, **kwargs)
-- **Total commands: 76** (39 object + 16 system + 21 from new objects)
+- ✅ Dynamic object management: add_object(), remove_object(), modify_object()
+- ✅ Object list queries: request_locomotive_list(), request_switch_list(), etc.
+- **Total commands: 84** (59 object + 16 system + 9 model queries)
 
 **Previous Progress (2025-10-17):**
 - Implemented Car, Operator, Schedule, and Stage objects
@@ -398,22 +401,46 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 
 ---
 
-### 3.2 Model Queries (`src/pyrocrail/model.py:40`)
+### 3.2 Model Queries (`src/pyrocrail/model.py`) ✅ COMPLETE
 
-**✅ Implemented**:
-- `<model cmd="plan"/>` - Get complete plan
+**✅ Implemented** (9 total) ✨ NEW (2025-10-20):
+- `init()` - Get complete plan (`<model cmd="plan"/>`)
+- `request_locomotive_list()` - Get locomotive list (`<model cmd="lclist"/>`)
+- `request_switch_list()` - Get switch list (`<model cmd="swlist"/>`)
+- `request_feedback_list()` - Get feedback sensor list (`<model cmd="fblist"/>`)
+- `request_locomotive_properties(loco_id)` - Get detailed locomotive properties (`<model cmd="lcprops" val="..."/>`)
+- `add_object(obj_type, xml_element)` - Add object dynamically (`<model cmd="add">...</model>`)
+- `remove_object(obj_type, obj_id)` - Remove object (`<model cmd="remove">...</model>`)
+- `modify_object(obj_type, obj_id, **attrs)` - Modify object properties (`<model cmd="modify">...</model>`)
+- `merge_plan(plan_xml)` - Merge plan updates (`<model cmd="merge">...</model>`)
 
-**❌ Missing**:
-- `<model cmd="lcprops" val="locoID"/>` - Get locomotive properties
-- `<model cmd="lclist"/>` - Get locomotive list
-- `<model cmd="merge"/>` - Merge plan updates
-- `<model cmd="add"/>` - Add object dynamically
-- `<model cmd="remove"/>` - Remove object
-- `<model cmd="modify"/>` - Modify object properties
-- `<model cmd="swlist"/>` - Get switch list
-- `<model cmd="fblist"/>` - Get feedback list
+**Usage Examples**:
+```python
+# Request object lists
+pr.model.request_locomotive_list()
+pr.model.request_switch_list()
+pr.model.request_feedback_list()
 
-**Priority**: HIGH (dynamic object management essential)
+# Query specific locomotive details
+pr.model.request_locomotive_properties("my_loco")
+
+# Add a new locomotive
+import xml.etree.ElementTree as ET
+lc_xml = ET.fromstring('<lc id="new_loco" addr="3" V="0"/>')
+pr.model.add_object("lc", lc_xml)
+
+# Modify locomotive properties
+pr.model.modify_object("lc", "my_loco", V_max="120", mass="100")
+
+# Remove an object
+pr.model.remove_object("lc", "old_loco")
+
+# Merge plan updates
+plan_xml = ET.fromstring('<plan>...</plan>')
+pr.model.merge_plan(plan_xml)
+```
+
+**Coverage**: 100% of documented commands (9/9) ✅
 
 ---
 
@@ -504,16 +531,17 @@ These Rocrail objects can be controlled at runtime but are **NOT implemented**:
 | **Schedule Commands** | 0 | 3 | ⚠️ UNVERIFIED ✨ NEW |
 | **Stage Commands** | 0 | 6 | ✅ 100% ✨ NEW |
 | **State Updates** | 0% | 100% | ✅ 10 object types |
-| **System Commands** | 6 | 16 | ✅ 100% |
-| **Model Queries** | 1 | 1 | ~11% (8+ missing) |
+| **System Commands** | 6 | 16 | ✅ 100% ✨ NEW |
+| **Model Queries** | 1 | 9 | ✅ 100% ✨ NEW |
 
 **Overall Improvement**:
-- Commands: 39 → 76 (+37 commands, +95%)
+- Commands: 39 → 84 (+45 commands, +115%)
 - Object types: 7 → 11 (+4 new types)
 - State updates: 0% → 100% (10 object types)
 - Objects with 100% verified command coverage: 0 → 8
 - Objects with structure + unverified commands: 1 (Schedule)
 - System commands: 6 → 16 (+10 commands, 100% coverage) ✨ NEW
+- Model queries: 1 → 9 (+8 commands, 100% coverage) ✨ NEW
 
 ---
 

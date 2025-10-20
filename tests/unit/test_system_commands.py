@@ -2,7 +2,7 @@
 """Test system commands"""
 
 from pyrocrail.pyrocrail import PyRocrail
-from tests.tools.mock_communicator import MockCommunicator
+from ..tools.mock_communicator import MockCommunicator
 
 
 def test_system_commands():

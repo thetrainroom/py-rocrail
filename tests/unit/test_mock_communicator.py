@@ -5,7 +5,7 @@ This demonstrates testing the real PyRocrail/Model classes with PCAP input.
 """
 
 import time
-from tests.tools.mock_communicator import create_mock_pyrocrail
+from ..tools.mock_communicator import create_mock_pyrocrail
 from pyrocrail.pyrocrail import Action, Trigger
 
 
@@ -256,7 +256,7 @@ def main():
         print("  3. Track sent commands without needing a real server")
         print("  4. Inject state changes to test event triggers")
         print("\nUsage:")
-        print("  from tests.tools.mock_communicator import create_mock_pyrocrail")
+        print("  from ..tools.mock_communicator import create_mock_pyrocrail")
         print("  pr, mock_com = create_mock_pyrocrail('tests/fixtures/pcap/your_file.txt')")
         print("  mock_com.start()")
         print("  pr.model.init()  # Loads from PCAP")

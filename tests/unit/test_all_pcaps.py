@@ -2,7 +2,7 @@
 """Test MockCommunicator with all available PCAP files"""
 
 import time
-from tests.tools.mock_communicator import create_mock_pyrocrail
+from ..tools.mock_communicator import create_mock_pyrocrail
 from pathlib import Path
 
 

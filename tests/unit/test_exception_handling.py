@@ -3,7 +3,7 @@
 
 import xml.etree.ElementTree as ET
 from pyrocrail.pyrocrail import PyRocrail
-from tests.tools.mock_communicator import MockCommunicator
+from ..tools.mock_communicator import MockCommunicator
 import sys
 from io import StringIO
 

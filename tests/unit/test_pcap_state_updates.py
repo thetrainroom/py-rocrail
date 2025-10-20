@@ -2,7 +2,7 @@
 """Test that model objects are updated from PCAP state messages"""
 
 import time
-from tests.tools.mock_communicator import create_mock_pyrocrail
+from ..tools.mock_communicator import create_mock_pyrocrail
 
 
 def test_feedback_state_updates():

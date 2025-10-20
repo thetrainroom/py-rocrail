@@ -149,6 +149,95 @@ class Model:
     def get_stage(self, label: str) -> Stage:
         return self._sb_domain[label]
 
+    # Model query commands
+    def request_locomotive_list(self):
+        """Request locomotive list from server
+
+        The server will respond with <lclist> containing all locomotives,
+        which will be processed by decode() and added to _lc_domain.
+        """
+        self.communicator.send("model", '<model cmd="lclist"/>')
+
+    def request_switch_list(self):
+        """Request switch list from server
+
+        The server will respond with <swlist> containing all switches,
+        which will be processed by decode() and added to _sw_domain.
+        """
+        self.communicator.send("model", '<model cmd="swlist"/>')
+
+    def request_feedback_list(self):
+        """Request feedback sensor list from server
+
+        The server will respond with <fblist> containing all feedback sensors,
+        which will be processed by decode() and added to _fb_domain.
+        """
+        self.communicator.send("model", '<model cmd="fblist"/>')
+
+    def request_locomotive_properties(self, loco_id: str):
+        """Request detailed properties for a specific locomotive
+
+        Args:
+            loco_id: Locomotive ID to query
+
+        The server will respond with detailed locomotive properties including
+        all configuration and current state information.
+        """
+        self.communicator.send("model", f'<model cmd="lcprops" val="{loco_id}"/>')
+
+    def add_object(self, obj_type: str, xml_element: ET.Element):
+        """Add a new object to the model dynamically
+
+        Args:
+            obj_type: Object type (lc, sw, fb, bk, sg, st, etc.)
+            xml_element: XML element defining the object
+
+        Example:
+            # Create a new locomotive
+            lc_xml = ET.fromstring('<lc id="new_loco" addr="3" V="0"/>')
+            model.add_object("lc", lc_xml)
+        """
+        xml_str = ET.tostring(xml_element, encoding="unicode")
+        self.communicator.send("model", f'<model cmd="add">{xml_str}</model>')
+
+    def remove_object(self, obj_type: str, obj_id: str):
+        """Remove an object from the model
+
+        Args:
+            obj_type: Object type (lc, sw, fb, bk, sg, st, etc.)
+            obj_id: Object ID to remove
+
+        Example:
+            model.remove_object("lc", "old_loco")
+        """
+        self.communicator.send("model", f'<model cmd="remove"><{obj_type} id="{obj_id}"/></model>')
+
+    def modify_object(self, obj_type: str, obj_id: str, **attributes):
+        """Modify an existing object's properties
+
+        Args:
+            obj_type: Object type (lc, sw, fb, bk, sg, st, etc.)
+            obj_id: Object ID to modify
+            **attributes: Attributes to update
+
+        Example:
+            model.modify_object("lc", "my_loco", V_max="120", mass="100")
+        """
+        attrs = " ".join([f'{key}="{value}"' for key, value in attributes.items()])
+        self.communicator.send("model", f'<model cmd="modify"><{obj_type} id="{obj_id}" {attrs}/></model>')
+
+    def merge_plan(self, plan_xml: ET.Element):
+        """Merge plan updates from XML
+
+        Args:
+            plan_xml: Plan XML element to merge
+
+        This is used to update the model with changes from the server
+        without requesting the complete plan again.
+        """
+        xml_str = ET.tostring(plan_xml, encoding="unicode")
+        self.communicator.send("model", f'<model cmd="merge">{xml_str}</model>')
+
     def _recv_clock(self, tag: ET.Element):
         self.clock.hour = int(tag.attrib["hour"])
         self.clock.minute = int(tag.attrib["minute"])

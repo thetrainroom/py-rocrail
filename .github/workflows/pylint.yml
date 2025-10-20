@@ -53,12 +53,12 @@ jobs:
     - name: Build Docker image
       run: |
         cd docker
-        docker-compose build
+        docker compose build
 
     - name: Start Rocrail container
       run: |
         cd docker
-        docker-compose up -d
+        docker compose up -d
 
     - name: Wait for Rocrail to be ready
       run: |
@@ -91,4 +91,4 @@ jobs:
       if: always()
       run: |
         cd docker
-        docker-compose down
+        docker compose down

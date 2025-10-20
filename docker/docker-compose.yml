@@ -1,5 +1,6 @@
 services:
   rocrail:
+    image: docker-rocrail:latest
     build:
       context: ..
       dockerfile: docker/Dockerfile

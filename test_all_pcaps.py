@@ -47,16 +47,16 @@ def test_pcap_file(pcap_path: str):
             time.sleep(0.05)
 
             if hasattr(fb, 'state') and fb.state:
-                print(f"\n[OK] State updates work (tested with {fb_id})")
+                print(f"\n(OK) State updates work (tested with {fb_id})")
             else:
-                print(f"\n[FAIL] State update failed for {fb_id}")
+                print(f"\n(FAIL) State update failed for {fb_id}")
 
         mock_com.stop()
-        print("\n[OK] PCAP loaded successfully\n")
+        print("\n(OK) PCAP loaded successfully\n")
         return True
 
     except Exception as e:
-        print(f"\n[FAIL] Error loading PCAP: {e}\n")
+        print(f"\n(FAIL) Error loading PCAP: {e}\n")
         import traceback
         traceback.print_exc()
         return False
@@ -82,7 +82,7 @@ def main():
         if Path(pcap_file).exists():
             results.append(test_pcap_file(pcap_file))
         else:
-            print(f"[SKIP] {pcap_file} not found\n")
+            print(f"(SKIP) {pcap_file} not found\n")
 
     print("="*80)
     print("SUMMARY")
@@ -94,13 +94,13 @@ def main():
     print(f"\nPCAP files tested: {passed}/{total} successful")
 
     if all(results):
-        print("\n[SUCCESS] All PCAP files work with MockCommunicator!")
+        print("\n(SUCCESS) All PCAP files work with MockCommunicator!")
         print("\nYou can use any of these captures for testing:")
         for pcap_file in pcap_files:
             if Path(pcap_file).exists():
                 print(f"  - {Path(pcap_file).name}")
     else:
-        print("\n[WARNING] Some PCAP files had issues")
+        print("\n(WARNING) Some PCAP files had issues")
 
     print()
 

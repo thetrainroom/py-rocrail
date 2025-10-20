@@ -38,13 +38,13 @@ def test_feedback_state_updates():
         print(f"  After false: {fb.state if hasattr(fb, 'state') else 'unknown'}")
 
         if hasattr(fb, 'state'):
-            print("\n[OK] Feedback sensor state is being updated!")
+            print("\n(OK) Feedback sensor state is being updated!")
             return True
         else:
-            print("\n[FAIL] Feedback sensor has no state attribute")
+            print("\n(FAIL) Feedback sensor has no state attribute")
             return False
     else:
-        print("\n[SKIP] No feedback sensors in PCAP")
+        print("\n(SKIP) No feedback sensors in PCAP")
         return True
 
 
@@ -88,13 +88,13 @@ def test_locomotive_state_updates():
         print(f"  Direction: {lc.dir if hasattr(lc, 'dir') else 'unknown'}")
 
         if hasattr(lc, 'V'):
-            print("\n[OK] Locomotive state is being updated!")
+            print("\n(OK) Locomotive state is being updated!")
             return True
         else:
-            print("\n[FAIL] Locomotive has no V attribute")
+            print("\n(FAIL) Locomotive has no V attribute")
             return False
     else:
-        print("\n[SKIP] No locomotives in PCAP")
+        print("\n(SKIP) No locomotives in PCAP")
         return True
 
 
@@ -127,13 +127,13 @@ def test_block_state_updates():
         print(f"    Reserved: {bk.reserved if hasattr(bk, 'reserved') else 'unknown'}")
 
         if hasattr(bk, 'state'):
-            print("\n[OK] Block state is being updated!")
+            print("\n(OK) Block state is being updated!")
             return True
         else:
-            print("\n[FAIL] Block has no state attribute")
+            print("\n(FAIL) Block has no state attribute")
             return False
     else:
-        print("\n[SKIP] No blocks in PCAP")
+        print("\n(SKIP) No blocks in PCAP")
         return True
 
 
@@ -170,13 +170,13 @@ def test_switch_state_updates():
         print(f"  After straight: {sw.state if hasattr(sw, 'state') else 'unknown'}")
 
         if hasattr(sw, 'state'):
-            print("\n[OK] Switch state is being updated!")
+            print("\n(OK) Switch state is being updated!")
             return True
         else:
-            print("\n[FAIL] Switch has no state attribute")
+            print("\n(FAIL) Switch has no state attribute")
             return False
     else:
-        print("\n[SKIP] No switches in PCAP")
+        print("\n(SKIP) No switches in PCAP")
         return True
 
 
@@ -206,13 +206,13 @@ def test_multiple_attribute_updates():
         print(f"  After:  V={getattr(lc, 'V', '?')}, dir={getattr(lc, 'dir', '?')}, lights={getattr(lc, 'lights', '?')}")
 
         if hasattr(lc, 'V'):
-            print("\n[OK] Multiple attributes updated in single message!")
+            print("\n(OK) Multiple attributes updated in single message!")
             return True
         else:
-            print("\n[FAIL] Update failed")
+            print("\n(FAIL) Update failed")
             return False
     else:
-        print("\n[SKIP] No locomotives in PCAP")
+        print("\n(SKIP) No locomotives in PCAP")
         return True
 
 
@@ -241,7 +241,7 @@ def main():
     print(f"\nTests passed: {passed}/{total}")
 
     if all(results):
-        print("\n[SUCCESS] All state update tests passed!")
+        print("\n(SUCCESS) All state update tests passed!")
         print("\nModel objects ARE updated from PCAP messages:")
         print("  - Feedback sensors: state updates work")
         print("  - Locomotives: speed, direction, lights updates work")

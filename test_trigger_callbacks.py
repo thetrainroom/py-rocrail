@@ -23,19 +23,19 @@ def test_success_callback():
 
     def my_action(model):
         """Action that returns a value"""
-        print("  [ACTION] Running...")
+        print("  (ACTION) Running...")
         time.sleep(0.2)  # Simulate work
         return "Task completed successfully!"
 
     def on_success(result, elapsed):
         """Called when action succeeds"""
-        print(f"  [SUCCESS] Action completed in {elapsed:.2f}s")
-        print(f"  [SUCCESS] Result: {result}")
+        print(f"  (SUCCESS) Action completed in {elapsed:.2f}s")
+        print(f"  (SUCCESS) Result: {result}")
         results.append(('success', result, elapsed))
 
     def on_error(exception, elapsed):
         """Called when action fails"""
-        print(f"  [ERROR] Action failed after {elapsed:.2f}s: {exception}")
+        print(f"  (ERROR) Action failed after {elapsed:.2f}s: {exception}")
         results.append(('error', exception, elapsed))
 
     # Create action with callbacks
@@ -72,15 +72,15 @@ def test_success_callback():
     if len(results) == 1:
         callback_type, data, elapsed = results[0]
         if callback_type == 'success':
-            print("[OK] Success callback invoked")
+            print("(OK) Success callback invoked")
             print(f"  Result: {data}")
             print(f"  Time: {elapsed:.2f}s")
             return True
         else:
-            print(f"[FAIL] Error callback invoked instead: {data}")
+            print(f"(FAIL) Error callback invoked instead: {data}")
             return False
     else:
-        print(f"[FAIL] Expected 1 callback, got {len(results)}")
+        print(f"(FAIL) Expected 1 callback, got {len(results)}")
         return False
 
 
@@ -101,7 +101,7 @@ def test_error_callback():
 
     def failing_action(model):
         """Action that raises an exception"""
-        print("  [ACTION] Running...")
+        print("  (ACTION) Running...")
         time.sleep(0.1)
         raise ValueError("Something went wrong!")
 
@@ -109,7 +109,7 @@ def test_error_callback():
         results.append(('success', result, elapsed))
 
     def on_error(exception, elapsed):
-        print(f"  [ERROR] Caught exception after {elapsed:.2f}s: {exception}")
+        print(f"  (ERROR) Caught exception after {elapsed:.2f}s: {exception}")
         results.append(('error', exception, elapsed))
 
     action = Action(
@@ -145,15 +145,15 @@ def test_error_callback():
     if len(results) == 1:
         callback_type, data, elapsed = results[0]
         if callback_type == 'error':
-            print("[OK] Error callback invoked")
+            print("(OK) Error callback invoked")
             print(f"  Exception: {data}")
             print(f"  Time: {elapsed:.2f}s")
             return True
         else:
-            print(f"[FAIL] Success callback invoked instead: {data}")
+            print(f"(FAIL) Success callback invoked instead: {data}")
             return False
     else:
-        print(f"[FAIL] Expected 1 callback, got {len(results)}")
+        print(f"(FAIL) Expected 1 callback, got {len(results)}")
         return False
 
 
@@ -174,7 +174,7 @@ def test_timeout_callback():
 
     def slow_action(model):
         """Action that takes too long"""
-        print("  [ACTION] Running slow task...")
+        print("  (ACTION) Running slow task...")
         time.sleep(2.0)  # Will timeout
         return "Done"
 
@@ -182,7 +182,7 @@ def test_timeout_callback():
         results.append(('success', result, elapsed))
 
     def on_error(exception, elapsed):
-        print(f"  [TIMEOUT] Action timed out after {elapsed:.2f}s: {exception}")
+        print(f"  (TIMEOUT) Action timed out after {elapsed:.2f}s: {exception}")
         results.append(('timeout', exception, elapsed))
 
     action = Action(
@@ -218,15 +218,15 @@ def test_timeout_callback():
     if len(results) >= 1:
         callback_type, data, elapsed = results[0]
         if callback_type == 'timeout':
-            print("[OK] Timeout error callback invoked")
+            print("(OK) Timeout error callback invoked")
             print(f"  Exception: {data}")
             print(f"  Time: {elapsed:.2f}s")
             return True
         else:
-            print(f"[FAIL] Wrong callback type: {callback_type}")
+            print(f"(FAIL) Wrong callback type: {callback_type}")
             return False
     else:
-        print("[FAIL] No callbacks invoked")
+        print("(FAIL) No callbacks invoked")
         return False
 
 
@@ -315,10 +315,10 @@ def test_execution_history():
         print(f"   Elapsed: {entry['elapsed']:.3f}s")
 
     if len(execution_log) == 3:
-        print("\n[OK] All 3 actions logged correctly")
+        print("\n(OK) All 3 actions logged correctly")
         return True
     else:
-        print(f"\n[FAIL] Expected 3 log entries, got {len(execution_log)}")
+        print(f"\n(FAIL) Expected 3 log entries, got {len(execution_log)}")
         return False
 
 
@@ -347,7 +347,7 @@ def main():
     print(f"\nTests passed: {passed}/{total}")
 
     if all(results):
-        print("\n[SUCCESS] All callback tests passed!")
+        print("\n(SUCCESS) All callback tests passed!")
         print("\nYou can now track action execution:")
         print("  - on_success(result, elapsed) - called when action completes")
         print("  - on_error(exception, elapsed) - called on failure or timeout")

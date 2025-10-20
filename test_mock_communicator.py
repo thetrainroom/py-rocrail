@@ -37,10 +37,10 @@ def test_basic_pcap_replay():
     print(f"  Stages: {len(pr.model._sb_domain)}")
 
     if len(pr.model._fb_domain) > 0:
-        print("\n[OK] Model loaded successfully from PCAP")
+        print("\n(OK) Model loaded successfully from PCAP")
         return True
     else:
-        print("\n[FAIL] No objects loaded")
+        print("\n(FAIL) No objects loaded")
         return False
 
 
@@ -64,7 +64,7 @@ def test_triggers_with_pcap():
             'fb_count': len(model._fb_domain),
             'lc_count': len(model._lc_domain),
         })
-        print(f"  [ACTION] Executed at {model.clock.hour}:{model.clock.minute:02d}")
+        print(f"  (ACTION) Executed at {model.clock.hour}:{model.clock.minute:02d}")
         print(f"    Sensors: {len(model._fb_domain)}, Locos: {len(model._lc_domain)}")
 
     # Add time trigger
@@ -84,7 +84,7 @@ def test_triggers_with_pcap():
     pr._exec_time()
     time.sleep(0.1)
 
-    print(f"\n[OK] Executed {len(executions)} times with real model data")
+    print(f"\n(OK) Executed {len(executions)} times with real model data")
     for exec_info in executions:
         print(f"  - {exec_info['time']}: {exec_info['fb_count']} sensors, {exec_info['lc_count']} locos")
 
@@ -124,7 +124,7 @@ def test_command_sending():
 
     # Check what was sent
     sent = mock_com.get_sent_messages()
-    print(f"\n[OK] Captured {len(sent)} sent commands:")
+    print(f"\n(OK) Captured {len(sent)} sent commands:")
     for msg in sent:
         print(f"  - {msg['type']}: {msg['message'][:60]}...")
 
@@ -141,7 +141,7 @@ def test_event_triggers_with_pcap():
     mock_com.start()
     pr.model.init()
 
-    print("\n[NOTE] Event triggers with inject_message are supported")
+    print("\n(NOTE) Event triggers with inject_message are supported")
     print("  - Use mock_com.inject_message('<fb id=\"...\" state=\"true\"/>')")
     print("  - Requires pr.model.change_callback = pr._exec_event")
     print("  - Full test skipped for brevity")
@@ -199,7 +199,7 @@ def test_action_with_pcap_model():
 
     def on_success(result, elapsed):
         results.append(result)
-        print(f"\n  [CALLBACK] Report generated in {elapsed:.3f}s")
+        print(f"\n  (CALLBACK) Report generated in {elapsed:.3f}s")
 
     action = Action(hourly_report, Trigger.TIME, "*:00", "", 5,
                    on_success=on_success)
@@ -216,11 +216,11 @@ def test_action_with_pcap_model():
     pr.__clean_thread.join(timeout=1.0)
 
     if len(results) == 1:
-        print("\n[OK] Action executed successfully")
+        print("\n(OK) Action executed successfully")
         print(f"  Report data: {results[0]}")
         return True
     else:
-        print(f"\n[FAIL] Expected 1 result, got {len(results)}")
+        print(f"\n(FAIL) Expected 1 result, got {len(results)}")
         return False
 
 
@@ -249,7 +249,7 @@ def main():
     print(f"\nTests passed: {passed}/{total}")
 
     if all(results):
-        print("\n[SUCCESS] All MockCommunicator tests passed!")
+        print("\n(SUCCESS) All MockCommunicator tests passed!")
         print("\nYou can now test PyRocrail with PCAP data:")
         print("  1. Load real model objects from PCAP")
         print("  2. Test triggers and actions with realistic data")

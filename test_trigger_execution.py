@@ -110,15 +110,15 @@ def test_time_trigger_execution():
         expected_sorted = sorted(expected_names)
 
         if actual_names == expected_sorted:
-            print(f"[OK] {t}: {len(actual_names)} actions executed as expected")
+            print(f"(OK) {t}: {len(actual_names)} actions executed as expected")
         else:
-            print(f"[FAIL] {t}:")
+            print(f"(FAIL) {t}:")
             print(f"  Expected: {expected_sorted}")
             print(f"  Actual: {actual_names}")
             all_correct = False
 
     if all_correct:
-        print("\n[SUCCESS] All triggers executed correctly!")
+        print("\n(SUCCESS) All triggers executed correctly!")
     else:
         print("\n[FAILURE] Some triggers did not execute as expected")
 
@@ -214,14 +214,14 @@ def test_event_trigger_execution():
     for name, expected_count, description in checks:
         actual_count = names.count(name)
         if actual_count == expected_count:
-            print(f"[OK] {description}")
+            print(f"(OK) {description}")
         else:
-            print(f"[FAIL] {description}")
+            print(f"(FAIL) {description}")
             print(f"  Expected: {expected_count}, Actual: {actual_count}")
             all_correct = False
 
     if all_correct:
-        print("\n[SUCCESS] All event triggers executed correctly!")
+        print("\n(SUCCESS) All event triggers executed correctly!")
     else:
         print("\n[FAILURE] Some event triggers did not execute as expected")
 
@@ -287,10 +287,10 @@ def test_duplicate_prevention():
     print("at the same time. For daily repeating triggers, use patterns like '*:30' instead.")
 
     if len(executions) == 1:
-        print("\n[OK] Executed exactly 1 time (prevented 2 duplicates)")
+        print("\n(OK) Executed exactly 1 time (prevented 2 duplicates)")
         return True
     else:
-        print(f"\n[FAIL] Expected 1 execution, got {len(executions)}")
+        print(f"\n(FAIL) Expected 1 execution, got {len(executions)}")
         return False
 
 
@@ -312,7 +312,7 @@ def main():
     print(f"\nTests passed: {passed}/{total}")
 
     if all(results):
-        print("\n[SUCCESS] All execution tests passed!")
+        print("\n(SUCCESS) All execution tests passed!")
         print("\nThe trigger system is working correctly:")
         print("  - TIME triggers execute on clock updates")
         print("  - Pattern matching works (exact, wildcards, intervals)")

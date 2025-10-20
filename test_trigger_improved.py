@@ -65,7 +65,7 @@ def test_time_pattern_matching():
 
     for pattern, hour, minute, expected in test_cases:
         result = pr._match_time_pattern(pattern, hour, minute)
-        status = "[OK]" if result == expected else "[FAIL]"
+        status = "(OK)" if result == expected else "(FAIL)"
         if result == expected:
             passed += 1
         else:
@@ -117,7 +117,7 @@ def test_condition_evaluation():
 
     for condition, hour, minute, expected in test_cases:
         result = pr._evaluate_condition(condition, hour, minute, model)
-        status = "[OK]" if result == expected else "[FAIL]"
+        status = "(OK)" if result == expected else "(FAIL)"
         if result == expected:
             passed += 1
         else:
@@ -158,7 +158,7 @@ def test_object_pattern_matching():
 
     for pattern, obj_id, expected in test_cases:
         result = pr._match_object_pattern(pattern, obj_id)
-        status = "[OK]" if result == expected else "[FAIL]"
+        status = "(OK)" if result == expected else "(FAIL)"
         if result == expected:
             passed += 1
         else:
@@ -250,21 +250,21 @@ def main():
     print("="*80)
     print("SUMMARY: Trigger System Features")
     print("="*80)
-    print("\n[OK] Time pattern matching:")
+    print("\n(OK) Time pattern matching:")
     print("  - Exact times: '12:30'")
     print("  - Hour wildcards: '*:00' (every hour)")
     print("  - Hour intervals: '*/2:00' (every 2 hours)")
     print("  - Minute intervals: '*:*/15' (every 15 minutes)")
     print("  - Continuous: '*' or None (every clock update)")
-    print("\n[OK] Condition evaluation:")
+    print("\n(OK) Condition evaluation:")
     print("  - Time ranges: '9 <= hour <= 17'")
     print("  - Modulo checks: 'hour % 2 == 0'")
     print("  - Boolean logic: 'minute == 0 or minute == 30'")
-    print("\n[OK] Event triggers:")
+    print("\n(OK) Event triggers:")
     print("  - Exact object: 'fb1'")
     print("  - Wildcards: 'fb*' (all feedback sensors)")
     print("  - Conditions: 'obj.state == True'")
-    print("\n[OK] Timeout handling:")
+    print("\n(OK) Timeout handling:")
     print("  - Configurable per action")
     print("  - Monitored by cleanup thread")
     print("\n" + "="*80)

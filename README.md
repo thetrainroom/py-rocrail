@@ -16,7 +16,6 @@ PyRocrail provides a Pythonic interface to the Rocrail server, allowing you to c
 
 - **[Object Reference](OBJECTS.md)** - Complete documentation for all object types with links to official Rocrail docs
 - **[Testing Strategy](TESTING_STRATEGY.md)** - Testing approach and guidelines
-- **[Gap Analysis](GAP_ANALYSIS.md)** - Implementation status and coverage
 - **[Examples](examples/)** - Tutorial examples and usage patterns
 
 ## Quick Start
@@ -76,7 +75,7 @@ except KeyboardInterrupt:
 
 ```bash
 # Clone the repository
-git clone https://github.com/user/py-rocrail.git
+git clone https://github.com/thetrainroom/py-rocrail.git
 cd py-rocrail
 
 # Install with Poetry

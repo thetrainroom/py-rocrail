@@ -1,22 +1,33 @@
 # Rocrail Docker Image for Testing PyRocrail
-# Multi-stage build: Copy Rocrail from evili/rocrail into Python 3.12 base
+# Build Rocrail with Python 3.12
 
-# Stage 1: Get Rocrail from evili/rocrail
-FROM evili/rocrail:latest AS rocrail-base
-
-# Stage 2: Build final image with Python 3.12
 FROM python:3.12-slim
 
-# Install Rocrail dependencies
+# Install Rocrail dependencies and download tools
 RUN apt-get update && apt-get install -y \
+    wget \
+    unzip \
     libgtk2.0-0 \
     libglib2.0-0 \
     tini \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Rocrail binaries from first stage
-COPY --from=rocrail-base /opt/rocrail /opt/rocrail
-COPY --from=rocrail-base /entrypoint.sh /entrypoint.sh
+# Download and install Rocrail from snapshot
+ARG ROCRAIL_PACKAGE=Debian/Rocrail-debian11-i64.zip
+RUN wget https://wiki.rocrail.net/rocrail-snapshot/${ROCRAIL_PACKAGE} -O /tmp/rocrail.zip \
+    && mkdir -p /opt/rocrail \
+    && unzip /tmp/rocrail.zip -d /opt/rocrail \
+    && chmod +x /opt/rocrail/bin/rocrail \
+    && rm /tmp/rocrail.zip
+
+# Create entrypoint script
+RUN echo '#!/bin/bash\n\
+set -euo pipefail\n\
+if [[ ! -e svg ]]; then\n\
+    ln -svi /opt/rocrail/svg .\n\
+fi\n\
+/opt/rocrail/bin/rocrail -l /opt/rocrail/bin\n\
+' > /entrypoint.sh && chmod +x /entrypoint.sh
 
 # Set working directory
 WORKDIR /rocrail

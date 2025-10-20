@@ -8,7 +8,8 @@
       "Bash(docker-compose up:*)",
       "Bash(docker exec:*)",
       "Bash(black:*)",
-      "Bash(docker compose:*)"
+      "Bash(docker compose:*)",
+      "Bash(pyright:*)"
     ],
     "deny": [],
     "ask": []

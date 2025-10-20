@@ -213,52 +213,52 @@ class Model:
         return self._weather_domain[label]
 
     # List getter methods (returns dictionaries of objects)
-    def get_locomotives(self) -> dict:
+    def get_locomotives(self) -> dict[str, Locomotive]:
         """Get all locomotives {id: Locomotive}"""
         return dict(self._lc_domain)
 
-    def get_blocks(self) -> dict:
+    def get_blocks(self) -> dict[str, Block]:
         """Get all blocks {id: Block}"""
         return dict(self._bk_domain)
 
-    def get_switches(self) -> dict:
+    def get_switches(self) -> dict[str, Switch]:
         """Get all switches {id: Switch}"""
         return dict(self._sw_domain)
 
-    def get_signals(self) -> dict:
+    def get_signals(self) -> dict[str, Signal]:
         """Get all signals {id: Signal}"""
         return dict(self._sg_domain)
 
-    def get_routes(self) -> dict:
+    def get_routes(self) -> dict[str, Route]:
         """Get all routes {id: Route}"""
         return dict(self._st_domain)
 
-    def get_feedbacks(self) -> dict:
+    def get_feedbacks(self) -> dict[str, Feedback]:
         """Get all feedback sensors {id: Feedback}"""
         return dict(self._fb_domain)
 
-    def get_outputs(self) -> dict:
+    def get_outputs(self) -> dict[str, Output]:
         """Get all outputs {id: Output}"""
         return dict(self._co_domain)
 
-    def get_cars(self) -> dict:
+    def get_cars(self) -> dict[str, Car]:
         """Get all cars {id: Car}"""
         return dict(self._car_domain)
 
-    def get_operators(self) -> dict:
+    def get_operators(self) -> dict[str, Operator]:
         """Get all operators {id: Operator}"""
         return dict(self._operator_domain)
 
-    def get_schedules(self) -> dict:
+    def get_schedules(self) -> dict[str, Schedule]:
         """Get all schedules {id: Schedule}"""
         return dict(self._sc_domain)
 
-    def get_stages(self) -> dict:
+    def get_stages(self) -> dict[str, Stage]:
         """Get all stage blocks {id: Stage}"""
         return dict(self._sb_domain)
 
     # Model query commands
-    def request_locomotive_list(self):
+    def request_locomotive_list(self) -> None:
         """Request locomotive list from server
 
         The server will respond with <lclist> containing all locomotives,
@@ -266,7 +266,7 @@ class Model:
         """
         self.communicator.send("model", '<model cmd="lclist"/>')
 
-    def request_switch_list(self):
+    def request_switch_list(self) -> None:
         """Request switch list from server
 
         The server will respond with <swlist> containing all switches,
@@ -274,7 +274,7 @@ class Model:
         """
         self.communicator.send("model", '<model cmd="swlist"/>')
 
-    def request_feedback_list(self):
+    def request_feedback_list(self) -> None:
         """Request feedback sensor list from server
 
         The server will respond with <fblist> containing all feedback sensors,
@@ -282,7 +282,7 @@ class Model:
         """
         self.communicator.send("model", '<model cmd="fblist"/>')
 
-    def request_locomotive_properties(self, loco_id: str):
+    def request_locomotive_properties(self, loco_id: str) -> None:
         """Request detailed properties for a specific locomotive
 
         Args:
@@ -293,7 +293,7 @@ class Model:
         """
         self.communicator.send("model", f'<model cmd="lcprops" val="{loco_id}"/>')
 
-    def add_object(self, obj_type: str, xml_element: ET.Element):
+    def add_object(self, obj_type: str, xml_element: ET.Element) -> None:
         """Add a new object to the model dynamically
 
         Args:
@@ -308,7 +308,7 @@ class Model:
         xml_str = ET.tostring(xml_element, encoding="unicode")
         self.communicator.send("model", f'<model cmd="add">{xml_str}</model>')
 
-    def remove_object(self, obj_type: str, obj_id: str):
+    def remove_object(self, obj_type: str, obj_id: str) -> None:
         """Remove an object from the model
 
         Args:
@@ -320,7 +320,7 @@ class Model:
         """
         self.communicator.send("model", f'<model cmd="remove"><{obj_type} id="{obj_id}"/></model>')
 
-    def modify_object(self, obj_type: str, obj_id: str, **attributes):
+    def modify_object(self, obj_type: str, obj_id: str, **attributes: str | int | None) -> None:
         """Modify an existing object's properties
 
         Args:
@@ -335,7 +335,7 @@ class Model:
         attrs = " ".join([f'{key}="{value if value is not None else ""}"' for key, value in attributes.items()])
         self.communicator.send("model", f'<model cmd="modify"><{obj_type} id="{obj_id}" {attrs}/></model>')
 
-    def merge_plan(self, plan_xml: ET.Element):
+    def merge_plan(self, plan_xml: ET.Element) -> None:
         """Merge plan updates from XML
 
         Args:

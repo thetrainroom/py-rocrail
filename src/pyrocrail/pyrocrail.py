@@ -73,7 +73,7 @@ class PyRocrail:
     def __del__(self):
         self.stop()
 
-    def start(self):
+    def start(self) -> None:
         self.com.start()
         self.model.init()
         self.model.time_callback = self._exec_time
@@ -81,74 +81,74 @@ class PyRocrail:
         self.__clean_thread = threading.Thread(target=self.__clean)
         self.__clean_thread.start()
 
-    def stop(self):
+    def stop(self) -> None:
         self.running = False
         if self.__clean_thread is not None:
             self.__clean_thread.join()
         self.com.stop()
 
-    def power_on(self):
+    def power_on(self) -> None:
         """Turn system power on"""
         self.com.send("sys", '<sys cmd="go"/>')
 
-    def power_off(self):
+    def power_off(self) -> None:
         """Turn system power off"""
         self.com.send("sys", '<sys cmd="stop"/>')
 
-    def emergency_stop(self):
+    def emergency_stop(self) -> None:
         """Emergency stop all trains"""
         # TODO: Verify emergency stop command format
         self.com.send("sys", '<sys cmd="ebreak"/>')
 
-    def auto_on(self):
+    def auto_on(self) -> None:
         """Enable automatic mode"""
         self.com.send("auto", '<auto cmd="on"/>')
 
-    def auto_off(self):
+    def auto_off(self) -> None:
         """Disable automatic mode"""
         self.com.send("auto", '<auto cmd="off"/>')
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the system"""
         self.com.send("sys", '<sys cmd="reset"/>')
 
-    def save(self):
+    def save(self) -> None:
         """Save Rocrail plan to disk"""
         self.com.send("sys", '<sys cmd="save"/>')
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Shutdown Rocrail server
 
         Warning: This will terminate the Rocrail server process.
         """
         self.com.send("sys", '<sys cmd="shutdown"/>')
 
-    def query(self):
+    def query(self) -> None:
         """Query server capabilities and version information"""
         self.com.send("sys", '<sys cmd="query"/>')
 
-    def start_of_day(self):
+    def start_of_day(self) -> None:
         """Execute start of day operations
 
         Typically used to initialize the layout at the beginning of an operating session.
         """
         self.com.send("sys", '<sys cmd="sod"/>')
 
-    def end_of_day(self):
+    def end_of_day(self) -> None:
         """Execute end of day operations
 
         Typically used to shut down the layout at the end of an operating session.
         """
         self.com.send("sys", '<sys cmd="eod"/>')
 
-    def update_ini(self):
+    def update_ini(self) -> None:
         """Update Rocrail configuration from rocrail.ini file
 
         Reloads configuration settings without restarting the server.
         """
         self.com.send("sys", '<sys cmd="updateini"/>')
 
-    def set_clock(self, hour: int | None = None, minute: int | None = None, divider: int | None = None, freeze: bool | None = None):
+    def set_clock(self, hour: int | None = None, minute: int | None = None, divider: int | None = None, freeze: bool | None = None) -> None:
         """Control the fast clock
 
         Args:
@@ -176,7 +176,7 @@ class PyRocrail:
         if attrs:
             self.com.send("clock", f'<clock {" ".join(attrs)}/>')
 
-    def fire_event(self, event_id: str, **kwargs):
+    def fire_event(self, event_id: str, **kwargs: str) -> None:
         """Fire a custom event
 
         Args:
@@ -192,7 +192,7 @@ class PyRocrail:
 
         self.com.send("event", f'<event {" ".join(attrs)}/>')
 
-    def request_locomotive_list(self):
+    def request_locomotive_list(self) -> None:
         """Request list of all locomotives from server
 
         The server will respond with locomotive data that will be processed
@@ -200,7 +200,7 @@ class PyRocrail:
         """
         self.com.send("sys", '<sys cmd="locliste"/>')
 
-    def add(self, action: Action):
+    def add(self, action: Action) -> None:
         if action.trigger_type == Trigger.TIME:
             self._time_actions.append(action)
         else:

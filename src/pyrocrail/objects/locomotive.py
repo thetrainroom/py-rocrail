@@ -29,7 +29,7 @@ class Locomotive:
 
         self.build(lc_xml)
 
-    def build(self, lc_xml: ET.Element):
+    def build(self, lc_xml: ET.Element) -> None:
         self.idx = lc_xml.attrib["id"]
         for attr, value in lc_xml.attrib.items():
             set_attr(self, attr, value)
@@ -37,7 +37,7 @@ class Locomotive:
         # TODO: Parse function definitions from XML
         # TODO: Parse CV values if present
 
-    def set_speed(self, speed: int):
+    def set_speed(self, speed: int) -> None:
         """Set locomotive speed (0-100)"""
         # TODO: Verify speed range and scaling
         speed = max(0, min(100, speed))
@@ -45,20 +45,20 @@ class Locomotive:
         self.communicator.send("lc", cmd)
         self.V = speed
 
-    def set_direction(self, forward: bool):
+    def set_direction(self, forward: bool) -> None:
         """Set locomotive direction"""
         dir_str = "true" if forward else "false"
         cmd = f'<lc id="{self.idx}" dir="{dir_str}"/>'
         self.communicator.send("lc", cmd)
         self.dir = forward
 
-    def stop(self):
+    def stop(self) -> None:
         """Emergency stop"""
         cmd = f'<lc id="{self.idx}" V="0"/>'
         self.communicator.send("lc", cmd)
         self.V = 0
 
-    def set_function(self, fn_num: int, state: bool):
+    def set_function(self, fn_num: int, state: bool) -> None:
         """Set function state"""
         # TODO: Verify function command format
         state_str = "true" if state else "false"
@@ -68,52 +68,52 @@ class Locomotive:
             self.fn = {}
         self.fn[fn_num] = state
 
-    def go_forward(self, speed: int = None):
+    def go_forward(self, speed: int | None = None) -> None:
         """Move forward at specified speed"""
         self.set_direction(True)
         if speed is not None:
             self.set_speed(speed)
 
-    def go_reverse(self, speed: int = None):
+    def go_reverse(self, speed: int | None = None) -> None:
         """Move reverse at specified speed"""
         self.set_direction(False)
         if speed is not None:
             self.set_speed(speed)
 
-    def go(self):
+    def go(self) -> None:
         """Start locomotive in automatic mode"""
         cmd = f'<lc id="{self.idx}" cmd="go"/>'
         self.communicator.send("lc", cmd)
 
-    def dispatch(self):
+    def dispatch(self) -> None:
         """Dispatch locomotive for automatic control"""
         # TODO: Verify dispatch command format
         cmd = f'<lc id="{self.idx}" cmd="dispatch"/>'
         self.communicator.send("lc", cmd)
 
-    def collect(self):
+    def collect(self) -> None:
         """Collect locomotive from automatic control"""
         # TODO: Verify collect command format
         cmd = f'<lc id="{self.idx}" cmd="collect"/>'
         self.communicator.send("lc", cmd)
 
-    def shortcut(self):
+    def shortcut(self) -> None:
         """Handle short circuit event"""
         # TODO: Verify shortcut command format
         cmd = f'<lc id="{self.idx}" cmd="shortcut"/>'
         self.communicator.send("lc", cmd)
 
-    def regularreset(self):
+    def regularreset(self) -> None:
         """Regular reset - removes assigned schedule"""
         cmd = f'<lc id="{self.idx}" cmd="regularreset"/>'
         self.communicator.send("lc", cmd)
 
-    def softreset(self):
+    def softreset(self) -> None:
         """Soft reset locomotive"""
         cmd = f'<lc id="{self.idx}" cmd="softreset"/>'
         self.communicator.send("lc", cmd)
 
-    def use_schedule(self, schedule_id: str):
+    def use_schedule(self, schedule_id: str) -> None:
         """Assign schedule to locomotive
 
         Args:

@@ -19,7 +19,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install ruff scapy
+        pip install ruff scapy pyright
     - name: Extract PCAP fixtures
       run: |
         python tests/tools/pcap_parser.py tests/fixtures/pcap/rocrail_start.pcapng
@@ -29,6 +29,9 @@ jobs:
     - name: Analysing the code with ruff
       run: |
         ruff check $(git ls-files '*.py')
+    - name: Type checking with pyright
+      run: |
+        pyright src/pyrocrail
     - name: Run trigger pattern tests
       run: |
         python -m tests.unit.test_trigger_improved

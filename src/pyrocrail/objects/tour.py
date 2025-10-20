@@ -1,0 +1,38 @@
+import xml.etree.ElementTree as ET
+from pyrocrail.objects import set_attr
+from pyrocrail.communicator import Communicator
+
+
+class Tour:
+    """Tour object for automated demonstrations
+
+    Tours provide automated sequences for demo mode and visitor presentations.
+    Note: Commands are not documented in official XMLScript documentation.
+    """
+
+    def __init__(self, tour_xml: ET.Element, com: Communicator):
+        self.idx = ""
+        self.communicator = com
+        self.build(tour_xml)
+
+    def build(self, tour: ET.Element):
+        self.idx = tour.attrib["id"]
+        for attr, value in tour.attrib.items():
+            if attr == "id":
+                continue
+            set_attr(self, attr, value)
+
+    def start(self):
+        """Start the tour (UNVERIFIED - not in official docs)"""
+        cmd = f'<tour id="{self.idx}" cmd="start"/>'
+        self.communicator.send("tour", cmd)
+
+    def stop(self):
+        """Stop the tour (UNVERIFIED - not in official docs)"""
+        cmd = f'<tour id="{self.idx}" cmd="stop"/>'
+        self.communicator.send("tour", cmd)
+
+    def reset(self):
+        """Reset the tour to beginning (UNVERIFIED - not in official docs)"""
+        cmd = f'<tour id="{self.idx}" cmd="reset"/>'
+        self.communicator.send("tour", cmd)

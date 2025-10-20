@@ -64,7 +64,7 @@ def test_model_queries():
             print(f"  (OK) request_locomotive_properties -> {msg['message']}")
             passed += 1
         else:
-            print(f"  (FAIL) request_locomotive_properties")
+            print("  (FAIL) request_locomotive_properties")
             print(f"       Expected: {expected}")
             print(f"       Got:      {msg['message']}")
             failed += 1
@@ -88,8 +88,8 @@ def test_model_queries():
             print(f"  (OK) add_object                 -> {msg['message']}")
             passed += 1
         else:
-            print(f"  (FAIL) add_object")
-            print(f"       Expected: <model cmd=\"add\"> with new_loco")
+            print("  (FAIL) add_object")
+            print("       Expected: <model cmd=\"add\"> with new_loco")
             print(f"       Got:      {msg['message']}")
             failed += 1
     else:
@@ -108,7 +108,7 @@ def test_model_queries():
             print(f"  (OK) remove_object              -> {msg['message']}")
             passed += 1
         else:
-            print(f"  (FAIL) remove_object")
+            print("  (FAIL) remove_object")
             print(f"       Expected: {expected}")
             print(f"       Got:      {msg['message']}")
             failed += 1
@@ -133,8 +133,8 @@ def test_model_queries():
             print(f"  (OK) modify_object              -> {msg['message']}")
             passed += 1
         else:
-            print(f"  (FAIL) modify_object")
-            print(f"       Expected: <model cmd=\"modify\"> with my_loco, V_max, mass")
+            print("  (FAIL) modify_object")
+            print("       Expected: <model cmd=\"modify\"> with my_loco, V_max, mass")
             print(f"       Got:      {msg['message']}")
             failed += 1
     else:
@@ -153,8 +153,8 @@ def test_model_queries():
             print(f"  (OK) merge_plan                 -> {msg['message']}")
             passed += 1
         else:
-            print(f"  (FAIL) merge_plan")
-            print(f"       Expected: <model cmd=\"merge\"> with plan")
+            print("  (FAIL) merge_plan")
+            print("       Expected: <model cmd=\"merge\"> with plan")
             print(f"       Got:      {msg['message']}")
             failed += 1
     else:

@@ -13,6 +13,12 @@ from pyrocrail.objects.car import Car
 from pyrocrail.objects.operator import Operator
 from pyrocrail.objects.schedule import Schedule
 from pyrocrail.objects.stage import Stage
+from pyrocrail.objects.text import Text
+from pyrocrail.objects.booster import Booster
+from pyrocrail.objects.variable import Variable
+from pyrocrail.objects.tour import Tour
+from pyrocrail.objects.location import Location
+from pyrocrail.objects.weather import Weather
 from pyrocrail.objects import set_attr
 from pyrocrail.communicator import Communicator
 
@@ -39,6 +45,12 @@ class Model:
         self._operator_domain: dict[str, Operator] = {}
         self._sc_domain: dict[str, Schedule] = {}
         self._sb_domain: dict[str, Stage] = {}
+        self._tx_domain: dict[str, Text] = {}
+        self._bstr_domain: dict[str, Booster] = {}
+        self._vr_domain: dict[str, Variable] = {}
+        self._tour_domain: dict[str, Tour] = {}
+        self._location_domain: dict[str, Location] = {}
+        self._weather_domain: dict[str, Weather] = {}
         self.curr_time: float = 0.0
         self.clock: Clock = Clock()
         self.change_callback = None
@@ -88,6 +100,27 @@ class Model:
             elif child.tag == "sb":
                 # Stage block state update
                 self._update_sb(child)
+            elif child.tag == "exception":
+                # Exception/error message from server
+                self._handle_exception(child)
+            elif child.tag == "text":
+                # Text display state update
+                self._update_tx(child)
+            elif child.tag == "bstr":
+                # Booster state update
+                self._update_bstr(child)
+            elif child.tag == "vr":
+                # Variable state update
+                self._update_vr(child)
+            elif child.tag == "tour":
+                # Tour state update
+                self._update_tour(child)
+            elif child.tag == "location":
+                # Location state update
+                self._update_location(child)
+            elif child.tag == "weather":
+                # Weather state update
+                self._update_weather(child)
             # TODO: Add output state update handler (co)
 
     def build(self, plan_xml: ET.Element):
@@ -114,6 +147,18 @@ class Model:
                 self._build_sc(child)
             elif child.tag == "sblist":
                 self._build_sb(child)
+            elif child.tag == "txlist":
+                self._build_tx(child)
+            elif child.tag == "bstrlist":
+                self._build_bstr(child)
+            elif child.tag == "vrlist":
+                self._build_vr(child)
+            elif child.tag == "tourlist":
+                self._build_tour(child)
+            elif child.tag == "locationlist":
+                self._build_location(child)
+            elif child.tag == "weatherlist":
+                self._build_weather(child)
         self.plan_recv = True
 
     def get_fb(self, label: str) -> Feedback:
@@ -148,6 +193,24 @@ class Model:
 
     def get_stage(self, label: str) -> Stage:
         return self._sb_domain[label]
+
+    def get_text(self, label: str) -> Text:
+        return self._tx_domain[label]
+
+    def get_booster(self, label: str) -> Booster:
+        return self._bstr_domain[label]
+
+    def get_variable(self, label: str) -> Variable:
+        return self._vr_domain[label]
+
+    def get_tour(self, label: str) -> Tour:
+        return self._tour_domain[label]
+
+    def get_location(self, label: str) -> Location:
+        return self._location_domain[label]
+
+    def get_weather(self, label: str) -> Weather:
+        return self._weather_domain[label]
 
     # Model query commands
     def request_locomotive_list(self):
@@ -302,6 +365,36 @@ class Model:
         for child in sblist:
             sb = Stage(child, self.communicator)
             self._sb_domain[sb.idx] = sb
+
+    def _build_tx(self, txlist: ET.Element):
+        for child in txlist:
+            tx = Text(child, self.communicator)
+            self._tx_domain[tx.idx] = tx
+
+    def _build_bstr(self, bstrlist: ET.Element):
+        for child in bstrlist:
+            bstr = Booster(child, self.communicator)
+            self._bstr_domain[bstr.idx] = bstr
+
+    def _build_vr(self, vrlist: ET.Element):
+        for child in vrlist:
+            vr = Variable(child, self.communicator)
+            self._vr_domain[vr.idx] = vr
+
+    def _build_tour(self, tourlist: ET.Element):
+        for child in tourlist:
+            tour = Tour(child, self.communicator)
+            self._tour_domain[tour.idx] = tour
+
+    def _build_location(self, locationlist: ET.Element):
+        for child in locationlist:
+            location = Location(child, self.communicator)
+            self._location_domain[location.idx] = location
+
+    def _build_weather(self, weatherlist: ET.Element):
+        for child in weatherlist:
+            weather = Weather(child, self.communicator)
+            self._weather_domain[weather.idx] = weather
 
     def _update_lc(self, lc_xml: ET.Element):
         """Update locomotive state from server"""
@@ -554,3 +647,173 @@ class Model:
         # Call change callback if registered
         if self.change_callback is not None:
             self.change_callback("sb", sb_id, sb)
+
+    def _handle_exception(self, exception_xml: ET.Element):
+        """Handle exception/error messages from server
+
+        Exception messages typically contain level, code, and text attributes.
+        Common exception types:
+        - level="exception": Critical errors
+        - level="warning": Non-critical warnings
+        - level="info": Informational messages
+        """
+        level = exception_xml.attrib.get("level", "unknown")
+        code = exception_xml.attrib.get("code", "")
+        text = exception_xml.attrib.get("text", "")
+        obj_id = exception_xml.attrib.get("id", "")
+
+        # Format exception message
+        msg_parts = [f"Rocrail {level.upper()}"]
+        if code:
+            msg_parts.append(f"[{code}]")
+        if obj_id:
+            msg_parts.append(f"(object: {obj_id})")
+        if text:
+            msg_parts.append(f": {text}")
+
+        # Print to log
+        print(" ".join(msg_parts))
+
+    def _update_tx(self, tx_xml: ET.Element):
+        """Update text display state from server"""
+        tx_id = tx_xml.attrib.get("id")
+
+        if not tx_id:
+            print(f"Warning: Text display update without id: {ET.tostring(tx_xml, encoding='unicode')[:100]}")
+            return
+
+        # Check if text exists
+        if tx_id not in self._tx_domain:
+            print(f"Warning: Received update for unknown text display: {tx_id}")
+            return
+
+        # Update text attributes
+        tx = self._tx_domain[tx_id]
+        for attr, value in tx_xml.attrib.items():
+            if attr == "id":
+                continue  # Don't overwrite the id
+            set_attr(tx, attr, value)
+
+        # Call change callback if registered
+        if self.change_callback is not None:
+            self.change_callback("text", tx_id, tx)
+
+    def _update_bstr(self, bstr_xml: ET.Element):
+        """Update booster state from server"""
+        bstr_id = bstr_xml.attrib.get("id")
+
+        if not bstr_id:
+            print(f"Warning: Booster update without id: {ET.tostring(bstr_xml, encoding='unicode')[:100]}")
+            return
+
+        # Check if booster exists
+        if bstr_id not in self._bstr_domain:
+            print(f"Warning: Received update for unknown booster: {bstr_id}")
+            return
+
+        # Update booster attributes
+        bstr = self._bstr_domain[bstr_id]
+        for attr, value in bstr_xml.attrib.items():
+            if attr == "id":
+                continue  # Don't overwrite the id
+            set_attr(bstr, attr, value)
+
+        # Call change callback if registered
+        if self.change_callback is not None:
+            self.change_callback("bstr", bstr_id, bstr)
+
+    def _update_vr(self, vr_xml: ET.Element):
+        """Update variable state from server"""
+        vr_id = vr_xml.attrib.get("id")
+
+        if not vr_id:
+            print(f"Warning: Variable update without id: {ET.tostring(vr_xml, encoding='unicode')[:100]}")
+            return
+
+        # Check if variable exists
+        if vr_id not in self._vr_domain:
+            print(f"Warning: Received update for unknown variable: {vr_id}")
+            return
+
+        # Update variable attributes
+        vr = self._vr_domain[vr_id]
+        for attr, value in vr_xml.attrib.items():
+            if attr == "id":
+                continue  # Don't overwrite the id
+            set_attr(vr, attr, value)
+
+        # Call change callback if registered
+        if self.change_callback is not None:
+            self.change_callback("vr", vr_id, vr)
+
+    def _update_tour(self, tour_xml: ET.Element):
+        """Update tour state from server"""
+        tour_id = tour_xml.attrib.get("id")
+
+        if not tour_id:
+            print(f"Warning: Tour update without id: {ET.tostring(tour_xml, encoding='unicode')[:100]}")
+            return
+
+        # Check if tour exists
+        if tour_id not in self._tour_domain:
+            print(f"Warning: Received update for unknown tour: {tour_id}")
+            return
+
+        # Update tour attributes
+        tour = self._tour_domain[tour_id]
+        for attr, value in tour_xml.attrib.items():
+            if attr == "id":
+                continue  # Don't overwrite the id
+            set_attr(tour, attr, value)
+
+        # Call change callback if registered
+        if self.change_callback is not None:
+            self.change_callback("tour", tour_id, tour)
+
+    def _update_location(self, location_xml: ET.Element):
+        """Update location state from server"""
+        location_id = location_xml.attrib.get("id")
+
+        if not location_id:
+            print(f"Warning: Location update without id: {ET.tostring(location_xml, encoding='unicode')[:100]}")
+            return
+
+        # Check if location exists
+        if location_id not in self._location_domain:
+            print(f"Warning: Received update for unknown location: {location_id}")
+            return
+
+        # Update location attributes
+        location = self._location_domain[location_id]
+        for attr, value in location_xml.attrib.items():
+            if attr == "id":
+                continue  # Don't overwrite the id
+            set_attr(location, attr, value)
+
+        # Call change callback if registered
+        if self.change_callback is not None:
+            self.change_callback("location", location_id, location)
+
+    def _update_weather(self, weather_xml: ET.Element):
+        """Update weather state from server"""
+        weather_id = weather_xml.attrib.get("id")
+
+        if not weather_id:
+            print(f"Warning: Weather update without id: {ET.tostring(weather_xml, encoding='unicode')[:100]}")
+            return
+
+        # Check if weather exists
+        if weather_id not in self._weather_domain:
+            print(f"Warning: Received update for unknown weather: {weather_id}")
+            return
+
+        # Update weather attributes
+        weather = self._weather_domain[weather_id]
+        for attr, value in weather_xml.attrib.items():
+            if attr == "id":
+                continue  # Don't overwrite the id
+            set_attr(weather, attr, value)
+
+        # Call change callback if registered
+        if self.change_callback is not None:
+            self.change_callback("weather", weather_id, weather)

@@ -106,8 +106,8 @@ def test_system_commands():
             print(f"  (OK) fire_event              -> {msg['message']}")
             passed += 1
         else:
-            print(f"  (FAIL) fire_event")
-            print(f"       Expected: event with id, state, value")
+            print("  (FAIL) fire_event")
+            print("       Expected: event with id, state, value")
             print(f"       Got:      {msg['message']}")
             failed += 1
     else:

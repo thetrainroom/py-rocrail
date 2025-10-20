@@ -3,7 +3,7 @@ name: Lint and Test
 on: [push]
 
 jobs:
-  build:
+  lint-and-unit-tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -44,3 +44,51 @@ jobs:
     - name: Run PCAP state update tests
       run: |
         python test_pcap_state_updates.py
+
+  docker-integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build Docker image
+      run: |
+        cd docker
+        docker-compose build
+
+    - name: Start Rocrail container
+      run: |
+        cd docker
+        docker-compose up -d
+
+    - name: Wait for Rocrail to be ready
+      run: |
+        echo "Waiting for Rocrail to start..."
+        sleep 5
+        docker logs pyrocrail-test-server
+
+    - name: Verify PyRocrail can connect
+      run: |
+        docker exec pyrocrail-test-server python3 -c "from pyrocrail.pyrocrail import PyRocrail; import time; pr = PyRocrail('localhost', 8051); pr.start(); time.sleep(2); print(f'Locomotives: {list(pr.model._lc_domain.keys())}'); pr.stop()"
+
+    - name: Run automode integration test
+      run: |
+        docker exec pyrocrail-test-server sh -c "cd /tests && python3 test_automode_multi.py"
+
+    - name: Run feedback sensor test
+      run: |
+        docker exec pyrocrail-test-server sh -c "cd /tests && python3 test_feedback_sensors.py"
+
+    - name: Run block close test
+      run: |
+        docker exec pyrocrail-test-server sh -c "cd /tests && python3 test_block_close.py"
+
+    - name: Show container logs on failure
+      if: failure()
+      run: |
+        docker logs pyrocrail-test-server
+
+    - name: Stop and remove containers
+      if: always()
+      run: |
+        cd docker
+        docker-compose down

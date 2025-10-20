@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  rocrail:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: pyrocrail-test-server
+    ports:
+      - "8051:8051"  # Rocrail control protocol port
+    volumes:
+      - ../src:/pyrocrail/src:ro            # Mount PyRocrail source code
+      - ..:/tests:ro                         # Mount test scripts (read-only)
+      - rocrail-traces:/rocrail/traces       # Persistent traces/logs
+    restart: unless-stopped
+    networks:
+      - rocrail-net
+
+volumes:
+  rocrail-traces:
+    driver: local
+
+networks:
+  rocrail-net:
+    driver: bridge

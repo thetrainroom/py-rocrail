@@ -1,0 +1,6 @@
+# Exclude everything except what we need
+*
+
+# Include only the example plan
+!example_plan/
+!example_plan/*.xml

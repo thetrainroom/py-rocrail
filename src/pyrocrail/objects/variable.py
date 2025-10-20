@@ -27,16 +27,6 @@ class Variable:
         cmd = f'<vr id="{self.idx}" cmd="random"/>'
         self.communicator.send("vr", cmd)
 
-    def start(self) -> None:
-        """Start variable (for timer variables)"""
-        cmd = f'<vr id="{self.idx}" cmd="start"/>'
-        self.communicator.send("vr", cmd)
-
-    def stop(self) -> None:
-        """Stop variable (for timer variables)"""
-        cmd = f'<vr id="{self.idx}" cmd="stop"/>'
-        self.communicator.send("vr", cmd)
-
     def set_value(self, value: int | None = None, text: str | None = None, generated: bool = True) -> None:
         """Set variable value and/or text
 

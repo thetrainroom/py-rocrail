@@ -4,10 +4,13 @@ from pyrocrail.communicator import Communicator
 
 
 class Operator:
-    """Train operator/composition object
+    """Train operator/composition object (shown as "Trains" in Rocview)
 
     Represents a train composition linking a locomotive to cars (rolling stock).
     Manages car assignment, loading/unloading operations.
+
+    Note: In Rocrail's Rocview GUI, these appear in the "Trains" menu/list.
+    The XML element is <operator>, but they are commonly referred to as "trains".
     """
 
     def __init__(self, opr_xml: ET.Element, com: Communicator):

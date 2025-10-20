@@ -331,7 +331,8 @@ class Model:
         Example:
             model.modify_object("lc", "my_loco", V_max="120", mass="100")
         """
-        attrs = " ".join([f'{key}="{value}"' for key, value in attributes.items()])
+        # Convert None back to empty string for XML
+        attrs = " ".join([f'{key}="{value if value is not None else ""}"' for key, value in attributes.items()])
         self.communicator.send("model", f'<model cmd="modify"><{obj_type} id="{obj_id}" {attrs}/></model>')
 
     def merge_plan(self, plan_xml: ET.Element):

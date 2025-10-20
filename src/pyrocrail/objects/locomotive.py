@@ -58,13 +58,6 @@ class Locomotive:
         self.communicator.send("lc", cmd)
         self.V = 0
 
-    def set_lights(self, on: bool):
-        """Set main lights on/off"""
-        lights_str = "true" if on else "false"
-        cmd = f'<lc id="{self.idx}" lights="{lights_str}"/>'
-        self.communicator.send("lc", cmd)
-        self.lights = on
-
     def set_function(self, fn_num: int, state: bool):
         """Set function state"""
         # TODO: Verify function command format

@@ -1,4 +1,9 @@
 def set_attr(obj, attr, value):
+    # Convert empty strings to None
+    if value == "":
+        setattr(obj, attr, None)
+        return
+
     try:
         val = int(value)
     except ValueError:

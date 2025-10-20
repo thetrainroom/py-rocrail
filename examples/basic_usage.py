@@ -18,7 +18,7 @@ def locomotive_example(model):
         
         # Basic locomotive control
         loco.set_speed(50)  # Set speed to 50%
-        loco.set_lights(True)  # Turn on lights
+        loco.set_function(0, True)  # Function 0 (often lights, depends on decoder)
         loco.go_forward(30)  # Go forward at 30% speed
         
         time.sleep(3)
@@ -163,13 +163,13 @@ def automation_example():
     def my_automation_script(model):
         """Custom automation script"""
         print("Running automation script...")
-        
+
         # Example: Turn on all feedback sensors sequentially
-        for fb_id, fb in model._fb_domain.items():
+        for fb_id, fb in model.get_feedbacks().items():
             fb.on()
             time.sleep(0.1)
             fb.off()
-            
+
         print("Automation script completed")
     
     # Create action with time trigger

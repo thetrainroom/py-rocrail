@@ -212,6 +212,51 @@ class Model:
     def get_weather(self, label: str) -> Weather:
         return self._weather_domain[label]
 
+    # List getter methods (returns dictionaries of objects)
+    def get_locomotives(self) -> dict:
+        """Get all locomotives {id: Locomotive}"""
+        return dict(self._lc_domain)
+
+    def get_blocks(self) -> dict:
+        """Get all blocks {id: Block}"""
+        return dict(self._bk_domain)
+
+    def get_switches(self) -> dict:
+        """Get all switches {id: Switch}"""
+        return dict(self._sw_domain)
+
+    def get_signals(self) -> dict:
+        """Get all signals {id: Signal}"""
+        return dict(self._sg_domain)
+
+    def get_routes(self) -> dict:
+        """Get all routes {id: Route}"""
+        return dict(self._st_domain)
+
+    def get_feedbacks(self) -> dict:
+        """Get all feedback sensors {id: Feedback}"""
+        return dict(self._fb_domain)
+
+    def get_outputs(self) -> dict:
+        """Get all outputs {id: Output}"""
+        return dict(self._co_domain)
+
+    def get_cars(self) -> dict:
+        """Get all cars {id: Car}"""
+        return dict(self._car_domain)
+
+    def get_operators(self) -> dict:
+        """Get all operators {id: Operator}"""
+        return dict(self._operator_domain)
+
+    def get_schedules(self) -> dict:
+        """Get all schedules {id: Schedule}"""
+        return dict(self._sc_domain)
+
+    def get_stages(self) -> dict:
+        """Get all stage blocks {id: Stage}"""
+        return dict(self._sb_domain)
+
     # Model query commands
     def request_locomotive_list(self):
         """Request locomotive list from server

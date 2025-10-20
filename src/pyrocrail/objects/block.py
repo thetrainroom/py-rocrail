@@ -67,16 +67,18 @@ class Block:
 
     def close(self):
         """Close the block (no entry allowed)"""
-        cmd = f'<bk id="{self.idx}" cmd="close"/>'
+        cmd = f'<bk id="{self.idx}" state="closed"/>'
         self.communicator.send("bk", cmd)
-        self.state = "closed"
+        # Don't update state immediately - wait for server response
+        # self.state = "closed"
 
     def open(self):
         """Open the block (allow entry)"""
-        cmd = f'<bk id="{self.idx}" cmd="open"/>'
+        cmd = f'<bk id="{self.idx}" state="open"/>'
         self.communicator.send("bk", cmd)
-        if not self.occ and not self.reserved:
-            self.state = "free"
+        # Don't update state immediately - wait for server response
+        # if not self.occ and not self.reserved:
+        #     self.state = "free"
 
     def accept_ident(self):
         """Accept locomotive identification"""

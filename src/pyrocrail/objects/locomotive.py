@@ -87,6 +87,11 @@ class Locomotive:
         if speed is not None:
             self.set_speed(speed)
 
+    def go(self):
+        """Start locomotive in automatic mode"""
+        cmd = f'<lc id="{self.idx}" cmd="go"/>'
+        self.communicator.send("lc", cmd)
+
     def dispatch(self):
         """Dispatch locomotive for automatic control"""
         # TODO: Verify dispatch command format

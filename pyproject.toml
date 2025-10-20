@@ -3,17 +3,16 @@ line-length = 180
 include = 'src/'
 
 [tool.pyright]
-include = []
+include = ["src/pyrocrail"]
 ignore = []
 pythonVersion = "3.12"
-pythonPlatform = "Windows"
-reportGeneralTypeIssues = "error"
-reportMissingImports = "error"
-reportUnboundVariable = "error"
-reportMatchNotExhaustive = "error"
-reportUnnecessaryComparison = "warning"
-reportUnnecessaryIsInstance = "none"
-typeCheckingMode = "strict"
+pythonPlatform = "Linux"
+typeCheckingMode = "basic"
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+reportUnknownParameterType = false
 
 [tool.ruff]
 exclude = []

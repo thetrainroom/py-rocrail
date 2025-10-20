@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 import datetime
 import time
 from dataclasses import dataclass, field
+from typing import Callable, Any
 from pyrocrail.objects.feedback import Feedback
 from pyrocrail.objects.output import Output
 from pyrocrail.objects.locomotive import Locomotive
@@ -53,8 +54,8 @@ class Model:
         self._weather_domain: dict[str, Weather] = {}
         self.curr_time: float = 0.0
         self.clock: Clock = Clock()
-        self.change_callback = None
-        self.time_callback = None
+        self.change_callback: Callable[[str, str, Any], None] | None = None
+        self.time_callback: Callable[[], None] | None = None
         self.plan_recv = False
 
     def init(self):
@@ -63,7 +64,7 @@ class Model:
             time.sleep(0.1)
         print("Model OK")
 
-    def decode(self, xml: ET.ElementTree):
+    def decode(self, xml: ET.Element) -> None:
         for child in xml:
             if child.tag == "clock":
                 self._recv_clock(child)

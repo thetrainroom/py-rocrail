@@ -55,7 +55,7 @@ class Action:
         self.on_success = on_success
         self.on_error = on_error
         self._start_time = 0.0
-        self._last_execution = None  # Track last execution time to avoid duplicates
+        self._last_execution: tuple[int, int] | None = None  # Track last execution time to avoid duplicates
         self.name = script.__name__ if hasattr(script, "__name__") else "anonymous"  # For logging
 
 
@@ -66,7 +66,7 @@ class PyRocrail:
         self._event_actions: list[Action] = []
         self._time_actions: list[Action] = []
         self._executor = ThreadPoolExecutor()
-        self.__threads: list[Future] = []
+        self.__threads: list[tuple[Future, int | float, float, Action] | tuple[Future, int | float, float]] = []
         self.running = True
         self.__clean_thread = None
 

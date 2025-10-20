@@ -22,7 +22,7 @@ class Location:
                 continue
             set_attr(self, attr, value)
 
-    def info(self, svalue: str = None):
+    def info(self, svalue: str | None = None) -> None:
         """Set or query location information
 
         Args:

@@ -2,6 +2,10 @@ import threading
 import time
 from socket import socket, AF_INET, SOCK_STREAM, IPPROTO_TCP, TCP_NODELAY
 import xml.etree.ElementTree as ET
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pyrocrail.model import Model
 
 
 def create_xml_msg(xml_type: str, xml_msg: str) -> str:
@@ -17,7 +21,7 @@ class Communicator:
         self.__buffer: list[str] = []
         self.run = False
         self.__s: socket | None = None
-        self.model = None
+        self.model: "Model | None" = None
         self.mutex = threading.Lock()
 
     def __del__(self):

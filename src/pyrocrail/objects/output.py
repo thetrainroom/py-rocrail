@@ -24,6 +24,11 @@ class Output:
     def __init__(self, fb_xml: ET.Element, com: Communicator):
         self.idx = ""
         self.communicator = com
+        # Dynamic attributes set via set_attr() in build()
+        self.state: str | None = None
+        self.value: int | None = None
+        self.valueoff: int | None = None
+        self.iid: str | None = None
         self.build(fb_xml)
 
     def build(self, co: ET.Element):
@@ -35,9 +40,16 @@ class Output:
             set_attr(self, attr, value)
         for sub in co:
             if sub.tag == "color":
-                self.color = Color(**sub.attrib)
+                # Convert string attributes to int for Color dataclass
+                color_attrs: dict[str, int | str] = {}
+                for k, v in sub.attrib.items():
+                    if k == "id":
+                        color_attrs[k] = v
+                    else:
+                        color_attrs[k] = int(v) if v else 0
+                self.color = Color(**color_attrs)  # type: ignore[arg-type]
 
-    def xml(self):
+    def xml(self) -> None:
         # TODO: Verify exact XML format for output control commands
         # TODO: Add proper error handling for missing attributes
         if self.color:
@@ -47,22 +59,22 @@ class Output:
 
         self.communicator.send("co", cmd)
 
-    def on(self):
+    def on(self) -> None:
         # TODO: Verify correct command format for turning output on
         cmd = f'<co id="{self.idx}" cmd="on"/>'
         self.communicator.send("co", cmd)
 
-    def off(self):
+    def off(self) -> None:
         # TODO: Verify correct command format for turning output off
         cmd = f'<co id="{self.idx}" cmd="off"/>'
         self.communicator.send("co", cmd)
 
-    def flip(self):
+    def flip(self) -> None:
         """Toggle output state (on <-> off)"""
         cmd = f'<co id="{self.idx}" cmd="flip"/>'
         self.communicator.send("co", cmd)
 
-    def active(self, duration_ms: int = None):
+    def active(self, duration_ms: int | None = None) -> None:
         """Set output active for specified duration then turn off
 
         Args:

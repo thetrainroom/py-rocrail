@@ -84,34 +84,3 @@ class Schedule:
                     departspeed=int(child.attrib.get("departspeed", "0")),
                 )
                 self.entries.append(entry)
-
-    # Note: The following commands are NOT verified in XMLScript documentation
-    # They are implemented based on expected functionality but may not work
-    # until confirmed with real Rocrail server or documentation
-
-    def start(self):
-        """Start the schedule (UNVERIFIED COMMAND)
-
-        WARNING: This command is not documented in official XMLScript reference.
-        It may not work with actual Rocrail servers.
-        """
-        cmd = f'<sc id="{self.idx}" cmd="start"/>'
-        self.communicator.send("sc", cmd)
-
-    def stop(self):
-        """Stop the schedule (UNVERIFIED COMMAND)
-
-        WARNING: This command is not documented in official XMLScript reference.
-        It may not work with actual Rocrail servers.
-        """
-        cmd = f'<sc id="{self.idx}" cmd="stop"/>'
-        self.communicator.send("sc", cmd)
-
-    def reset(self):
-        """Reset the schedule to beginning (UNVERIFIED COMMAND)
-
-        WARNING: This command is not documented in official XMLScript reference.
-        It may not work with actual Rocrail servers.
-        """
-        cmd = f'<sc id="{self.idx}" cmd="reset"/>'
-        self.communicator.send("sc", cmd)

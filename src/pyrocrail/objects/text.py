@@ -22,41 +22,6 @@ class Text:
                 continue
             set_attr(self, attr, value)
 
-    def showon(self):
-        """Show/turn on the text display"""
-        cmd = f'<text id="{self.idx}" cmd="showon"/>'
-        self.communicator.send("text", cmd)
-
-    def showoff(self):
-        """Hide/turn off the text display"""
-        cmd = f'<text id="{self.idx}" cmd="showoff"/>'
-        self.communicator.send("text", cmd)
-
-    def blink(self, enable: bool = True):
-        """Enable or disable text blinking
-
-        Args:
-            enable: True to enable blinking, False to disable
-        """
-        blink_value = "true" if enable else "false"
-        cmd = f'<text id="{self.idx}" cmd="blink" blink="{blink_value}"/>'
-        self.communicator.send("text", cmd)
-
-    def on(self):
-        """Turn text display on"""
-        cmd = f'<text id="{self.idx}" cmd="on"/>'
-        self.communicator.send("text", cmd)
-
-    def off(self):
-        """Turn text display off"""
-        cmd = f'<text id="{self.idx}" cmd="off"/>'
-        self.communicator.send("text", cmd)
-
-    def click(self):
-        """Simulate a click on the text display"""
-        cmd = f'<text id="{self.idx}" cmd="click"/>'
-        self.communicator.send("text", cmd)
-
     def set_format(self, format_str: str, **kwargs):
         """Set text format with optional parameters
 

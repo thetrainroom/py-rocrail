@@ -21,18 +21,3 @@ class Tour:
             if attr == "id":
                 continue
             set_attr(self, attr, value)
-
-    def start(self):
-        """Start the tour (UNVERIFIED - not in official docs)"""
-        cmd = f'<tour id="{self.idx}" cmd="start"/>'
-        self.communicator.send("tour", cmd)
-
-    def stop(self):
-        """Stop the tour (UNVERIFIED - not in official docs)"""
-        cmd = f'<tour id="{self.idx}" cmd="stop"/>'
-        self.communicator.send("tour", cmd)
-
-    def reset(self):
-        """Reset the tour to beginning (UNVERIFIED - not in official docs)"""
-        cmd = f'<tour id="{self.idx}" cmd="reset"/>'
-        self.communicator.send("tour", cmd)

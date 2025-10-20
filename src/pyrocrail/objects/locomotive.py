@@ -91,18 +91,6 @@ class Locomotive:
         cmd = f'<lc id="{self.idx}" cmd="dispatch"/>'
         self.communicator.send("lc", cmd)
 
-    def collect(self) -> None:
-        """Collect locomotive from automatic control"""
-        # TODO: Verify collect command format
-        cmd = f'<lc id="{self.idx}" cmd="collect"/>'
-        self.communicator.send("lc", cmd)
-
-    def shortcut(self) -> None:
-        """Handle short circuit event"""
-        # TODO: Verify shortcut command format
-        cmd = f'<lc id="{self.idx}" cmd="shortcut"/>'
-        self.communicator.send("lc", cmd)
-
     def regularreset(self) -> None:
         """Regular reset - removes assigned schedule"""
         cmd = f'<lc id="{self.idx}" cmd="regularreset"/>'
@@ -120,4 +108,35 @@ class Locomotive:
             schedule_id: Schedule ID to use
         """
         cmd = f'<lc id="{self.idx}" cmd="useschedule" scheduleid="{schedule_id}"/>'
+        self.communicator.send("lc", cmd)
+
+    def swap(self) -> None:
+        """Swap/reverse locomotive direction"""
+        cmd = f'<lc id="{self.idx}" cmd="swap"/>'
+        self.communicator.send("lc", cmd)
+
+    def set_class(self, class_name: str | None = None) -> None:
+        """Set or clear locomotive class
+
+        Args:
+            class_name: Class name to set, or None to clear
+        """
+        if class_name:
+            cmd = f'<lc id="{self.idx}" cmd="classset" class="{class_name}"/>'
+        else:
+            cmd = f'<lc id="{self.idx}" cmd="classset"/>'
+        self.communicator.send("lc", cmd)
+
+    def assign_train(self, train_id: str) -> None:
+        """Assign train/operator to locomotive
+
+        Args:
+            train_id: Train or operator ID to assign
+        """
+        cmd = f'<lc id="{self.idx}" cmd="assigntrain" train="{train_id}"/>'
+        self.communicator.send("lc", cmd)
+
+    def release_train(self) -> None:
+        """Release assigned train/operator from locomotive"""
+        cmd = f'<lc id="{self.idx}" cmd="releasetrain"/>'
         self.communicator.send("lc", cmd)

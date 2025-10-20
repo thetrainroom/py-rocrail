@@ -110,8 +110,95 @@ class PyRocrail:
 
     def reset(self):
         """Reset the system"""
-        # TODO: Verify reset command format
         self.com.send("sys", '<sys cmd="reset"/>')
+
+    def save(self):
+        """Save Rocrail plan to disk"""
+        self.com.send("sys", '<sys cmd="save"/>')
+
+    def shutdown(self):
+        """Shutdown Rocrail server
+
+        Warning: This will terminate the Rocrail server process.
+        """
+        self.com.send("sys", '<sys cmd="shutdown"/>')
+
+    def query(self):
+        """Query server capabilities and version information"""
+        self.com.send("sys", '<sys cmd="query"/>')
+
+    def start_of_day(self):
+        """Execute start of day operations
+
+        Typically used to initialize the layout at the beginning of an operating session.
+        """
+        self.com.send("sys", '<sys cmd="sod"/>')
+
+    def end_of_day(self):
+        """Execute end of day operations
+
+        Typically used to shut down the layout at the end of an operating session.
+        """
+        self.com.send("sys", '<sys cmd="eod"/>')
+
+    def update_ini(self):
+        """Update Rocrail configuration from rocrail.ini file
+
+        Reloads configuration settings without restarting the server.
+        """
+        self.com.send("sys", '<sys cmd="updateini"/>')
+
+    def set_clock(self, hour: int | None = None, minute: int | None = None, divider: int | None = None, freeze: bool | None = None):
+        """Control the fast clock
+
+        Args:
+            hour: Set clock hour (0-23), None to keep current
+            minute: Set clock minute (0-59), None to keep current
+            divider: Clock speed divider (1=real time, 2=2x speed, etc.), None to keep current
+            freeze: True to freeze clock, False to resume, None to keep current
+
+        Examples:
+            pr.set_clock(hour=12, minute=30)  # Set time to 12:30
+            pr.set_clock(divider=10)  # Run clock at 10x speed
+            pr.set_clock(freeze=True)  # Freeze the clock
+            pr.set_clock(freeze=False)  # Resume the clock
+        """
+        attrs = []
+        if hour is not None:
+            attrs.append(f'hour="{hour}"')
+        if minute is not None:
+            attrs.append(f'minute="{minute}"')
+        if divider is not None:
+            attrs.append(f'divider="{divider}"')
+        if freeze is not None:
+            attrs.append(f'freeze="{"true" if freeze else "false"}"')
+
+        if attrs:
+            self.com.send("clock", f'<clock {" ".join(attrs)}/>')
+
+    def fire_event(self, event_id: str, **kwargs):
+        """Fire a custom event
+
+        Args:
+            event_id: Event identifier
+            **kwargs: Additional event attributes
+
+        Example:
+            pr.fire_event("my_custom_event", state="active", value="123")
+        """
+        attrs = [f'id="{event_id}"']
+        for key, value in kwargs.items():
+            attrs.append(f'{key}="{value}"')
+
+        self.com.send("event", f'<event {" ".join(attrs)}/>')
+
+    def request_locomotive_list(self):
+        """Request list of all locomotives from server
+
+        The server will respond with locomotive data that will be processed
+        by the model's decode method.
+        """
+        self.com.send("sys", '<sys cmd="locliste"/>')
 
     def add(self, action: Action):
         if action.trigger_type == Trigger.TIME:

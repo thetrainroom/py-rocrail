@@ -57,6 +57,7 @@ class Model:
         self.change_callback: Callable[[str, str, Any], None] | None = None
         self.time_callback: Callable[[], None] | None = None
         self.plan_recv = False
+        self.server_shutting_down = False  # Flag for graceful server shutdown
 
     def init(self):
         self.communicator.send("model", '<model cmd="plan"/>')
@@ -122,6 +123,9 @@ class Model:
             elif child.tag == "weather":
                 # Weather state update
                 self._update_weather(child)
+            elif child.tag == "sys":
+                # System messages (shutdown, etc.)
+                self._handle_sys(child)
             # TODO: Add output state update handler (co)
 
     def build(self, plan_xml: ET.Element):
@@ -720,6 +724,24 @@ class Model:
 
         # Print to log
         print(" ".join(msg_parts))
+
+    def _handle_sys(self, sys_xml: ET.Element):
+        """Handle system messages from server
+
+        System messages include:
+        - cmd="shutdown": Server is shutting down gracefully
+        - cmd="go": Track power on
+        - cmd="stop": Track power off
+        - etc.
+        """
+        cmd = sys_xml.attrib.get("cmd", "")
+
+        if cmd == "shutdown":
+            # Server is shutting down gracefully
+            self.server_shutting_down = True
+            print("Rocrail INFO: Server shutting down gracefully")
+        # Other system commands can be logged but don't require special handling
+        # as they're typically sent by us, not by the server
 
     def _update_tx(self, tx_xml: ET.Element):
         """Update text display state from server"""

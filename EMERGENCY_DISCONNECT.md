@@ -52,10 +52,33 @@ pr.start()
 
 **With emergency handling:**
 - ✅ Automatic connection loss detection
+- ✅ **Distinguishes crash from graceful shutdown**
 - ✅ Immediate power cutoff (via your hardware)
 - ✅ Complete state snapshot saved
 - ✅ Operator alerted instantly
 - ✅ Minutes to recover (not hours)
+
+## Graceful Shutdown vs Crash Detection
+
+PyRocrail automatically distinguishes between:
+
+**Graceful Shutdown** (Rocrail sends `<sys cmd="shutdown"/>`):
+- User closes Rocrail properly (File → Exit)
+- Emergency handler **NOT called** ✅
+- No unnecessary alarms
+- Normal shutdown sequence
+
+**Unexpected Disconnect** (No shutdown message):
+- Rocrail crashes ⚠️
+- Network failure ⚠️
+- Process killed ⚠️
+- Power loss ⚠️
+- Emergency handler **IS called** 🚨
+- Track power cut
+- State saved
+- Operator alerted
+
+This prevents false alarms while ensuring safety during actual emergencies.
 
 ## Hardware Power Cutoff
 

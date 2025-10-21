@@ -182,13 +182,22 @@ class Communicator:
             self.run = False
 
             # Call disconnect callback if connection was lost unexpectedly
-            # (not due to normal shutdown via stop())
+            # (not due to normal shutdown via stop() or server graceful shutdown)
             if connection_lost and not self._stopped and not self._disconnect_called:
                 self._disconnect_called = True
-                if self.on_disconnect and self.model:
+
+                # Check if server sent shutdown message (graceful shutdown)
+                graceful_shutdown = self.model and getattr(self.model, "server_shutting_down", False)
+
+                if graceful_shutdown:
+                    # Server shut down properly - no emergency action needed
+                    if self.verbose:
+                        print("[INFO] Server shutdown was graceful - emergency handler not called")
+                elif self.on_disconnect and self.model:
+                    # Unexpected disconnect - call emergency handler!
                     try:
                         if self.verbose:
-                            print("[INFO] Calling disconnect handler...")
+                            print("[EMERGENCY] Unexpected disconnect - calling emergency handler...")
                         self.on_disconnect(self.model)
                     except Exception as e:
                         if self.verbose:

@@ -1,5 +1,6 @@
 import threading
 import time
+import atexit
 from socket import socket, AF_INET, SOCK_STREAM, IPPROTO_TCP, TCP_NODELAY
 import xml.etree.ElementTree as ET
 from typing import TYPE_CHECKING
@@ -13,7 +14,7 @@ def create_xml_msg(xml_type: str, xml_msg: str) -> str:
 
 
 class Communicator:
-    def __init__(self, ip: str = "localhost", port: int = 8051):
+    def __init__(self, ip: str = "localhost", port: int = 8051, verbose: bool = False):
         self.ip = ip
         self.port = port
         self.__thread = None
@@ -23,30 +24,65 @@ class Communicator:
         self.__s: socket | None = None
         self.model: "Model | None" = None
         self.mutex = threading.Lock()
+        self.verbose = verbose
+        self._stopped = False
+
+        # Register cleanup handler
+        atexit.register(self.stop)
+
+    def __enter__(self):
+        """Context manager entry"""
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit - automatic cleanup"""
+        self.stop()
+        return False
 
     def __del__(self):
-        if self.__s is not None:
-            self.__s.close()
+        """Destructor - final backup cleanup"""
+        self.stop()
 
     def send(self, xml_type: str, xml_msg: str) -> str:
         assert self.__s is not None
         xml = create_xml_msg(xml_type, xml_msg)
-        print(xml)
+        if self.verbose:
+            print(f"[SEND] {xml}")
         with self.mutex:
             self.__s.send(xml.encode("utf-8"))
         return xml
 
     def start(self):
-        self.__thread = threading.Thread(target=self._recv)
+        self.__thread = threading.Thread(target=self._recv, daemon=True)
         self.__thread.start()
         while not self.run:
             time.sleep(0.001)
-        print(f"Connected to {self.ip}:{self.port}")
+        if self.verbose:
+            print(f"[INFO] Connected to {self.ip}:{self.port}")
 
     def stop(self):
+        """Stop communicator and cleanup resources
+
+        Safe to call multiple times (idempotent).
+        """
+        if self._stopped:
+            return  # Already stopped
+
+        self._stopped = True
         self.run = False
-        if self.__thread is not None:
-            self.__thread.join()
+
+        # Stop receiver thread
+        if self.__thread is not None and self.__thread.is_alive():
+            self.__thread.join(timeout=2.0)
+
+        # Close socket
+        if self.__s is not None:
+            try:
+                self.__s.close()
+            except Exception:
+                pass
+            self.__s = None
 
     def _parse(self) -> int | None:
         pos = self._byte_buffer.find(0)
@@ -88,29 +124,44 @@ class Communicator:
             root = ET.fromstring(r)
             assert self.model is not None
             self.model.decode(root)
+            if self.verbose:
+                print(f"[RECV] {ET.tostring(root, encoding='unicode')[:200]}...")
         except Exception as e:
-            print(repr(e))
+            if self.verbose:
+                print(f"[ERROR] {repr(e)}")
 
     def _recv(self):
-        self.__s = socket(AF_INET, SOCK_STREAM)
-        self.__s.connect((self.ip, self.port))
-        self.__s.setsockopt(IPPROTO_TCP, TCP_NODELAY, 1)
-        self.__s.settimeout(2)
-        self.run = True
-        while self.run:
-            try:
-                with self.mutex:
-                    self._byte_buffer.extend(self.__s.recv(2048))
-            except KeyboardInterrupt:
-                self.run = False
-                break
-            except TimeoutError:
-                time.sleep(0.1)
-                continue
+        try:
+            self.__s = socket(AF_INET, SOCK_STREAM)
+            self.__s.connect((self.ip, self.port))
+            self.__s.setsockopt(IPPROTO_TCP, TCP_NODELAY, 1)
+            self.__s.settimeout(0.5)  # Reduced timeout for faster shutdown
+            self.run = True
+            while self.run:
+                try:
+                    with self.mutex:
+                        data = self.__s.recv(2048)
+                        if not data:
+                            # Connection closed
+                            break
+                        self._byte_buffer.extend(data)
+                except KeyboardInterrupt:
+                    break
+                except TimeoutError:
+                    continue
+                except OSError:
+                    # Socket closed
+                    break
 
-            end_pos = -1
-            while end_pos is not None:
-                end_pos = self._parse()
-                if end_pos:
-                    self._decode(end_pos)
-        self.__s.close()
+                end_pos = -1
+                while end_pos is not None:
+                    end_pos = self._parse()
+                    if end_pos:
+                        self._decode(end_pos)
+        finally:
+            self.run = False
+            if self.__s is not None:
+                try:
+                    self.__s.close()
+                except Exception:
+                    pass

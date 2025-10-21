@@ -78,19 +78,35 @@ def main():
         print("\nRegistering time-based actions...")
 
         # Every hour at minute 00
-        pr.add(Action(hourly_report, Trigger.TIME, hour="*", minute="0"))
+        pr.add(Action(
+            script=hourly_report,
+            trigger_type=Trigger.TIME,
+            trigger="*:0"  # XX:00 - every hour at minute 00
+        ))
         print("  ✓ Hourly report at XX:00")
 
         # Specific time: 08:00
-        pr.add(Action(morning_startup, Trigger.TIME, hour="8", minute="0"))
+        pr.add(Action(
+            script=morning_startup,
+            trigger_type=Trigger.TIME,
+            trigger="8:0"  # 08:00 exactly
+        ))
         print("  ✓ Morning startup at 08:00")
 
         # Specific time: 20:00
-        pr.add(Action(evening_shutdown, Trigger.TIME, hour="20", minute="0"))
+        pr.add(Action(
+            script=evening_shutdown,
+            trigger_type=Trigger.TIME,
+            trigger="20:0"  # 20:00 exactly
+        ))
         print("  ✓ Evening shutdown at 20:00")
 
         # Every 15 minutes
-        pr.add(Action(every_15_minutes, Trigger.TIME, hour="*", minute="*/15"))
+        pr.add(Action(
+            script=every_15_minutes,
+            trigger_type=Trigger.TIME,
+            trigger="*:*/15"  # Every 15 minutes
+        ))
         print("  ✓ Quarter-hour check every 15 minutes")
 
         # Optional: Speed up the clock for testing

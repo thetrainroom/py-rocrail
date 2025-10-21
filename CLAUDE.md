@@ -60,9 +60,12 @@ python test.py
   - Getter methods for all object types:
     - `get_lc()` - Locomotives, `get_bk()` - Blocks, `get_sw()` - Switches, `get_sg()` - Signals
     - `get_st()` - Routes, `get_fb()` - Feedback sensors, `get_co()` - Outputs
-    - `get_car()` - Cars, `get_operator()` - Operators (trains), `get_sc()` - Schedules
-    - `get_stage()` - Staging yards, `get_text()` - Text displays, `get_bs()` - Boosters
-    - `get_vr()` - Variables, `get_tour()` - Tours, `get_location()` - Locations, `get_weather()` - Weather
+    - `get_car()` - Cars, `get_operator()` - Operators (trains), `get_schedule()` - Schedules
+    - `get_stage()` - Staging yards, `get_text()` - Text displays, `get_booster()` - Boosters
+    - `get_variable()` - Variables, `get_tour()` - Tours, `get_location()` - Locations, `get_weather()` - Weather
+  - Collection getter methods (return all objects):
+    - `get_locomotives()`, `get_blocks()`, `get_switches()`, `get_signals()`, `get_routes()`
+    - `get_feedbacks()`, `get_outputs()`, `get_cars()`, `get_operators()`, `get_schedules()`, `get_stages()`
 
 - **Control Objects** (`src/pyrocrail/objects/`): 17 complete Rocrail entity types - see [OBJECTS.md](OBJECTS.md) for full documentation
   - **Core Control**: `Locomotive` (speed, direction, functions), `Block` (reservation, occupancy), `Switch` (turnout control), `Signal` (aspect control), `Route` (path routing)

@@ -1,5 +1,6 @@
 import time
 import re
+import atexit
 from typing import Callable
 from enum import Enum
 import threading
@@ -60,8 +61,15 @@ class Action:
 
 
 class PyRocrail:
-    def __init__(self, ip: str = "localhost", port: int = 8051):
-        self.com = Communicator(ip, port)
+    def __init__(self, ip: str = "localhost", port: int = 8051, verbose: bool = False):
+        """Initialize PyRocrail connection
+
+        Args:
+            ip: Rocrail server IP address
+            port: Rocrail server port
+            verbose: Enable verbose logging (prints all sent/received messages)
+        """
+        self.com = Communicator(ip, port, verbose=verbose)
         self.model = Model(self.com)
         self._event_actions: list[Action] = []
         self._time_actions: list[Action] = []
@@ -69,8 +77,24 @@ class PyRocrail:
         self.__threads: list[tuple[Future, int | float, float, Action] | tuple[Future, int | float, float]] = []
         self.running = True
         self.__clean_thread = None
+        self.verbose = verbose
+        self._stopped = False
+
+        # Register cleanup handler for exit() / interactive mode
+        atexit.register(self.stop)
+
+    def __enter__(self):
+        """Context manager entry - allows 'with PyRocrail() as pr:' syntax"""
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit - automatic cleanup"""
+        self.stop()
+        return False  # Don't suppress exceptions
 
     def __del__(self):
+        """Destructor - final backup cleanup (unreliable, prefer context manager or explicit stop())"""
         self.stop()
 
     def start(self) -> None:
@@ -82,9 +106,27 @@ class PyRocrail:
         self.__clean_thread.start()
 
     def stop(self) -> None:
+        """Stop PyRocrail and cleanup resources
+
+        Safe to call multiple times (idempotent).
+        """
+        if self._stopped:
+            return  # Already stopped, prevent duplicate cleanup
+
+        self._stopped = True
         self.running = False
-        if self.__clean_thread is not None:
-            self.__clean_thread.join()
+
+        # Stop cleanup thread
+        if self.__clean_thread is not None and self.__clean_thread.is_alive():
+            self.__clean_thread.join(timeout=5.0)
+
+        # Shutdown executor
+        try:
+            self._executor.shutdown(wait=True, cancel_futures=True)
+        except Exception:
+            pass  # Executor may already be shutdown
+
+        # Stop communicator
         self.com.stop()
 
     def power_on(self) -> None:
@@ -310,8 +352,9 @@ class PyRocrail:
             result = eval(condition, {"__builtins__": {}}, scope)
             return bool(result)
         except Exception as e:
-            print(f"Warning: Condition evaluation failed: {condition}")
-            print(f"  Error: {e}")
+            if self.verbose:
+                print(f"Warning: Condition evaluation failed: {condition}")
+                print(f"  Error: {e}")
             return False
 
     def _match_object_pattern(self, pattern: str | None, obj_id: str) -> bool:
@@ -396,8 +439,9 @@ class PyRocrail:
                     if not result:
                         continue
                 except Exception as e:
-                    print(f"Warning: Event condition evaluation failed: {ac.condition}")
-                    print(f"  Error: {e}")
+                    if self.verbose:
+                        print(f"Warning: Event condition evaluation failed: {ac.condition}")
+                        print(f"  Error: {e}")
                     continue
 
             # Execute action
@@ -409,6 +453,8 @@ class PyRocrail:
         """Cleanup thread - monitors futures and enforces timeouts."""
         while self.running:
             time.sleep(0.1)  # Check every 100ms
+            if not self.running:  # Check again after sleep
+                break
             if len(self.__threads) > 0:
                 item = self.__threads.pop(0)
 
@@ -441,10 +487,12 @@ class PyRocrail:
                             try:
                                 action.on_error(exp, elapsed)
                             except Exception as callback_err:
-                                print(f"  Error callback failed: {repr(callback_err)}")
+                                if self.verbose:
+                                    print(f"  Error callback failed: {repr(callback_err)}")
                         else:
                             # Only print if no callback registered
-                            print(f"Action '{action.name if action else 'unknown'}' failed: {repr(exp)}")
+                            if self.verbose:
+                                print(f"Action '{action.name if action else 'unknown'}' failed: {repr(exp)}")
                     else:
                         # Action succeeded
                         result = future.result()
@@ -452,7 +500,8 @@ class PyRocrail:
                             try:
                                 action.on_success(result, elapsed)
                             except Exception as callback_err:
-                                print(f"  Success callback failed: {repr(callback_err)}")
+                                if self.verbose:
+                                    print(f"  Success callback failed: {repr(callback_err)}")
                     continue
 
                 # Check timeout
@@ -463,10 +512,12 @@ class PyRocrail:
                         try:
                             action.on_error(TimeoutError(f"Timeout after {elapsed:.1f}s"), elapsed)
                         except Exception as callback_err:
-                            print(f"  Error callback failed: {repr(callback_err)}")
+                            if self.verbose:
+                                print(f"  Error callback failed: {repr(callback_err)}")
                     else:
                         # Only print if no callback registered
-                        print(f"Warning: Action '{action.name if action else 'unknown'}' timeout after {elapsed:.1f}s (limit: {timeout}s)")
+                        if self.verbose:
+                            print(f"Warning: Action '{action.name if action else 'unknown'}' timeout after {elapsed:.1f}s (limit: {timeout}s)")
                     continue
 
                 # Still running, put back in queue

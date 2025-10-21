@@ -19,47 +19,48 @@ def main():
     print("SIMPLE ROCRAIL CONNECTION EXAMPLE")
     print("=" * 80)
 
-    # Connect to Rocrail (default: localhost:8051)
-    pr = PyRocrail("localhost", 8051)
-
+    # Connect to Rocrail using context manager (automatic cleanup)
+    # Context manager automatically calls pr.start() on entry and pr.stop() on exit
     try:
-        # Start connection and wait for model to load
-        pr.start()
-        print("\nConnected to Rocrail!")
-        time.sleep(2)  # Wait for model to fully load
+        with PyRocrail("localhost", 8051) as pr:
+            print("\nConnected to Rocrail!")
+            time.sleep(2)  # Wait for model to fully load
 
-        # Check what's in the model
-        print("\nModel loaded:")
-        print(f"  Locomotives: {len(pr.model.get_locomotives())}")
-        print(f"  Blocks: {len(pr.model.get_blocks())}")
-        print(f"  Switches: {len(pr.model.get_switches())}")
-        print(f"  Signals: {len(pr.model.get_signals())}")
-        print(f"  Feedback sensors: {len(pr.model.get_feedbacks())}")
+            # Check what's in the model
+            print("\nModel loaded:")
+            print(f"  Locomotives: {len(pr.model.get_locomotives())}")
+            print(f"  Blocks: {len(pr.model.get_blocks())}")
+            print(f"  Switches: {len(pr.model.get_switches())}")
+            print(f"  Signals: {len(pr.model.get_signals())}")
+            print(f"  Feedback sensors: {len(pr.model.get_feedbacks())}")
 
-        # List all locomotives
-        if pr.model.get_locomotives():
-            print("\nLocomotives in your layout:")
-            for loco_id, loco in pr.model.get_locomotives().items():
-                block = getattr(loco, "blockid", "unknown")
-                print(f"  - {loco_id} (in block: {block})")
+            # List all locomotives
+            if pr.model.get_locomotives():
+                print("\nLocomotives in your layout:")
+                for loco_id, loco in pr.model.get_locomotives().items():
+                    block = getattr(loco, "blockid", "unknown")
+                    print(f"  - {loco_id} (in block: {block})")
 
-            # Get first locomotive
-            first_loco_id = list(pr.model.get_locomotives().keys())[0]
-            loco = pr.model.get_lc(first_loco_id)
-            print(f"\nExample locomotive: {first_loco_id}")
-            print(f"  Current speed: {getattr(loco, 'V', 0)}")
-            print(f"  Direction: {'forward' if getattr(loco, 'dir', True) else 'reverse'}")
-            print(f"  Block: {getattr(loco, 'blockid', 'unknown')}")
+                # Get first locomotive
+                first_loco_id = list(pr.model.get_locomotives().keys())[0]
+                loco = pr.model.get_lc(first_loco_id)
+                print(f"\nExample locomotive: {first_loco_id}")
+                print(f"  Current speed: {getattr(loco, 'V', 0)}")
+                print(f"  Direction: {'forward' if getattr(loco, 'dir', True) else 'reverse'}")
+                print(f"  Block: {getattr(loco, 'blockid', 'unknown')}")
 
-        # Power control
-        print("\nTurning power ON...")
-        pr.power_on()
-        time.sleep(1)
+            # Power control
+            print("\nTurning power ON...")
+            pr.power_on()
+            time.sleep(1)
 
-        print("Turning power OFF...")
-        pr.power_off()
+            print("Turning power OFF...")
+            pr.power_off()
 
-        print("\nConnection test successful!")
+            print("\nConnection test successful!")
+
+        # Automatically cleaned up here
+        print("\nDisconnected from Rocrail")
 
     except KeyboardInterrupt:
         print("\n\nInterrupted by user")
@@ -67,10 +68,6 @@ def main():
         print(f"\nError: {e}")
         import traceback
         traceback.print_exc()
-    finally:
-        # Always clean up
-        pr.stop()
-        print("\nDisconnected from Rocrail")
 
 
 if __name__ == "__main__":

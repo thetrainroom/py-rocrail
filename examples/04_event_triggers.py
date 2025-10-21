@@ -80,24 +80,47 @@ def main():
         # Register event-based actions
         print("\nRegistering event-based actions...")
 
-        # Feedback sensor events
-        pr.add(Action(on_sensor_activated, Trigger.FB, fb_id="*", fb_state="true"))
+        # Feedback sensor events (any sensor that becomes active)
+        pr.add(Action(
+            script=on_sensor_activated,
+            trigger_type=Trigger.EVENT,
+            trigger="fb*",  # Match all feedback sensors
+            condition="obj.state == True"  # Only when sensor activates
+        ))
         print("  ✓ Sensor activation monitor")
 
-        # Block occupation events
-        pr.add(Action(on_block_occupied, Trigger.BK, bk_id="*", bk_occ="true"))
+        # Block occupation events (any block that becomes occupied)
+        pr.add(Action(
+            script=on_block_occupied,
+            trigger_type=Trigger.EVENT,
+            trigger="bk*",  # Match all blocks
+            condition="hasattr(obj, 'occ') and obj.occ == True"  # Only when occupied
+        ))
         print("  ✓ Block occupation monitor")
 
-        # Switch events
-        pr.add(Action(on_switch_changed, Trigger.SW, sw_id="*"))
+        # Switch events (any switch that changes position)
+        pr.add(Action(
+            script=on_switch_changed,
+            trigger_type=Trigger.EVENT,
+            trigger="sw*"  # Match all switches
+        ))
         print("  ✓ Switch change monitor")
 
         # Specific block event (if 'station1' exists)
-        pr.add(Action(on_locomotive_enters_station, Trigger.BK, bk_id="station1", bk_occ="true"))
+        pr.add(Action(
+            script=on_locomotive_enters_station,
+            trigger_type=Trigger.EVENT,
+            trigger="station1",  # Specific block ID
+            condition="hasattr(obj, 'occ') and obj.occ == True"  # Only when occupied
+        ))
         print("  ✓ Station arrival monitor (if 'station1' exists)")
 
         # Time-based check combined with events
-        pr.add(Action(count_active_trains, Trigger.TIME, hour="*", minute="*/5"))
+        pr.add(Action(
+            script=count_active_trains,
+            trigger_type=Trigger.TIME,
+            trigger="*:*/5"  # Every 5 minutes
+        ))
         print("  ✓ Active trains check every 5 minutes")
 
         # Run and monitor events

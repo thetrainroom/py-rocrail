@@ -22,53 +22,53 @@ PyRocrail provides a Pythonic interface to the Rocrail server, allowing you to c
 
 ```python
 from pyrocrail import PyRocrail, Action, Trigger
+import time
 
-# Connect to Rocrail
-pr = PyRocrail("localhost", 8051)
-pr.start()
+# Connect to Rocrail using context manager (automatic cleanup)
+with PyRocrail("localhost", 8051) as pr:
+    # Control a locomotive
+    loco = pr.model.get_lc("BR01")
+    loco.set_speed(50)
+    loco.set_direction(True)
+    loco.go()
 
-# Control a locomotive
-loco = pr.model.get_lc("BR01")
-loco.set_speed(50)
-loco.set_direction(True)
-loco.go()
+    # Set a switch
+    switch = pr.model.get_sw("SW01")
+    switch.turnout()
 
-# Set a switch
-switch = pr.model.get_sw("SW01")
-switch.turnout()
+    # Activate a route
+    route = pr.model.get_st("RT01")
+    route.set()
 
-# Activate a route
-route = pr.model.get_st("RT01")
-route.set()
+    # Time-based action (run at 12:30)
+    def morning_announcement(model):
+        print("Morning operations starting")
 
-# Time-based action (run at 12:30)
-def morning_announcement(model):
-    print("Morning operations starting")
+    pr.add(Action(
+        script=morning_announcement,
+        trigger_type=Trigger.TIME,
+        trigger="12:30"
+    ))
 
-pr.add(Action(
-    script=morning_announcement,
-    trigger_type=Trigger.TIME,
-    trigger="12:30"
-))
+    # Event-based action (when sensor activates)
+    def on_train_detected(model):
+        loco = model.get_lc("BR01")
+        loco.set_speed(25)  # Slow down
 
-# Event-based action (when sensor activates)
-def on_train_detected(model):
-    loco = model.get_lc("BR01")
-    loco.set_speed(25)  # Slow down
+    pr.add(Action(
+        script=on_train_detected,
+        trigger_type=Trigger.EVENT,
+        trigger="FB01",
+        condition="obj.state == True"
+    ))
 
-pr.add(Action(
-    script=on_train_detected,
-    trigger_type=Trigger.EVENT,
-    trigger="FB01",
-    condition="obj.state == True"
-))
-
-# Keep running
-try:
-    while True:
-        time.sleep(1)
-except KeyboardInterrupt:
-    pr.stop()
+    # Keep running
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        pass
+# Automatically cleaned up when exiting 'with' block
 ```
 
 ## Installation

@@ -248,6 +248,258 @@ class PyRocrail:
         else:
             self._event_actions.append(action)
 
+    # ========== Condition Helper Functions ==========
+    # These helpers make writing conditions easier and more readable
+
+    # Sensor/Feedback helpers
+    def _is_active(self, obj_id: str) -> bool:
+        """Check if a feedback sensor is active"""
+        try:
+            fb = self.model.get_fb(obj_id)
+            return getattr(fb, "state", False)
+        except (KeyError, AttributeError):
+            return False
+
+    def _is_inactive(self, obj_id: str) -> bool:
+        """Check if a feedback sensor is inactive"""
+        return not self._is_active(obj_id)
+
+    # Block helpers
+    def _is_occupied(self, block_id: str) -> bool:
+        """Check if a block is occupied"""
+        try:
+            bk = self.model.get_bk(block_id)
+            return getattr(bk, "occ", False)
+        except (KeyError, AttributeError):
+            return False
+
+    def _is_free(self, block_id: str) -> bool:
+        """Check if a block is free (not occupied)"""
+        return not self._is_occupied(block_id)
+
+    def _is_reserved(self, block_id: str) -> bool:
+        """Check if a block is reserved"""
+        try:
+            bk = self.model.get_bk(block_id)
+            return getattr(bk, "reserved", False)
+        except (KeyError, AttributeError):
+            return False
+
+    # Switch helpers
+    def _is_straight(self, switch_id: str) -> bool:
+        """Check if switch is in straight position"""
+        try:
+            sw = self.model.get_sw(switch_id)
+            return getattr(sw, "state", "") == "straight"
+        except (KeyError, AttributeError):
+            return False
+
+    def _is_turnout(self, switch_id: str) -> bool:
+        """Check if switch is in turnout position"""
+        try:
+            sw = self.model.get_sw(switch_id)
+            return getattr(sw, "state", "") == "turnout"
+        except (KeyError, AttributeError):
+            return False
+
+    def _is_left(self, switch_id: str) -> bool:
+        """Check if 3-way switch is in left position"""
+        try:
+            sw = self.model.get_sw(switch_id)
+            return getattr(sw, "state", "") == "left"
+        except (KeyError, AttributeError):
+            return False
+
+    def _is_right(self, switch_id: str) -> bool:
+        """Check if 3-way switch is in right position"""
+        try:
+            sw = self.model.get_sw(switch_id)
+            return getattr(sw, "state", "") == "right"
+        except (KeyError, AttributeError):
+            return False
+
+    # Signal helpers
+    def _is_red(self, signal_id: str) -> bool:
+        """Check if signal is showing red aspect"""
+        try:
+            sg = self.model.get_sg(signal_id)
+            return getattr(sg, "aspect", "") == "red"
+        except (KeyError, AttributeError):
+            return False
+
+    def _is_green(self, signal_id: str) -> bool:
+        """Check if signal is showing green aspect"""
+        try:
+            sg = self.model.get_sg(signal_id)
+            return getattr(sg, "aspect", "") == "green"
+        except (KeyError, AttributeError):
+            return False
+
+    def _is_yellow(self, signal_id: str) -> bool:
+        """Check if signal is showing yellow aspect"""
+        try:
+            sg = self.model.get_sg(signal_id)
+            return getattr(sg, "aspect", "") == "yellow"
+        except (KeyError, AttributeError):
+            return False
+
+    def _is_white(self, signal_id: str) -> bool:
+        """Check if signal is showing white/shunt aspect"""
+        try:
+            sg = self.model.get_sg(signal_id)
+            return getattr(sg, "aspect", "") == "white"
+        except (KeyError, AttributeError):
+            return False
+
+    # Locomotive helpers
+    def _is_moving(self, loco_id: str) -> bool:
+        """Check if locomotive is moving (speed > 0)"""
+        try:
+            lc = self.model.get_lc(loco_id)
+            return getattr(lc, "V", 0) > 0
+        except (KeyError, AttributeError):
+            return False
+
+    def _is_stopped(self, loco_id: str) -> bool:
+        """Check if locomotive is stopped (speed == 0)"""
+        return not self._is_moving(loco_id)
+
+    def _is_forward(self, loco_id: str) -> bool:
+        """Check if locomotive direction is forward"""
+        try:
+            lc = self.model.get_lc(loco_id)
+            return getattr(lc, "dir", True)
+        except (KeyError, AttributeError):
+            return False
+
+    def _is_reverse(self, loco_id: str) -> bool:
+        """Check if locomotive direction is reverse"""
+        return not self._is_forward(loco_id)
+
+    def _speed_above(self, loco_id: str, threshold: int) -> bool:
+        """Check if locomotive speed is above threshold"""
+        try:
+            lc = self.model.get_lc(loco_id)
+            return getattr(lc, "V", 0) > threshold
+        except (KeyError, AttributeError):
+            return False
+
+    def _speed_below(self, loco_id: str, threshold: int) -> bool:
+        """Check if locomotive speed is below threshold"""
+        try:
+            lc = self.model.get_lc(loco_id)
+            return getattr(lc, "V", 0) < threshold
+        except (KeyError, AttributeError):
+            return False
+
+    def _speed_between(self, loco_id: str, min_speed: int, max_speed: int) -> bool:
+        """Check if locomotive speed is between min and max (inclusive)"""
+        try:
+            lc = self.model.get_lc(loco_id)
+            speed = getattr(lc, "V", 0)
+            return min_speed <= speed <= max_speed
+        except (KeyError, AttributeError):
+            return False
+
+    # Route helpers
+    def _is_locked(self, route_id: str) -> bool:
+        """Check if route is locked"""
+        try:
+            st = self.model.get_st(route_id)
+            return getattr(st, "status", "") == "locked"
+        except (KeyError, AttributeError):
+            return False
+
+    def _is_unlocked(self, route_id: str) -> bool:
+        """Check if route is unlocked"""
+        return not self._is_locked(route_id)
+
+    # Output helpers
+    def _is_on(self, output_id: str) -> bool:
+        """Check if output is on"""
+        try:
+            co = self.model.get_co(output_id)
+            return getattr(co, "state", False)
+        except (KeyError, AttributeError):
+            return False
+
+    def _is_off(self, output_id: str) -> bool:
+        """Check if output is off"""
+        return not self._is_on(output_id)
+
+    # Collection/counting helpers
+    def _count_occupied(self) -> int:
+        """Count number of occupied blocks"""
+        return sum(1 for bk in self.model.get_blocks().values() if getattr(bk, "occ", False))
+
+    def _count_active(self, obj_type: str = "fb") -> int:
+        """Count active objects (sensors by default)"""
+        if obj_type == "fb":
+            return sum(1 for fb in self.model.get_feedbacks().values() if getattr(fb, "state", False))
+        elif obj_type == "co":
+            return sum(1 for co in self.model.get_outputs().values() if getattr(co, "state", False))
+        return 0
+
+    def _count_moving(self) -> int:
+        """Count number of moving locomotives"""
+        return sum(1 for lc in self.model.get_locomotives().values() if getattr(lc, "V", 0) > 0)
+
+    def _any_moving(self) -> bool:
+        """Check if any locomotive is moving"""
+        return self._count_moving() > 0
+
+    def _all_stopped(self) -> bool:
+        """Check if all locomotives are stopped"""
+        return self._count_moving() == 0
+
+    def _loco_in_block(self, loco_id: str, block_id: str) -> bool:
+        """Check if specific locomotive is in specific block"""
+        try:
+            bk = self.model.get_bk(block_id)
+            return getattr(bk, "locid", "") == loco_id
+        except (KeyError, AttributeError):
+            return False
+
+    def _block_has_loco(self, block_id: str) -> bool:
+        """Check if block has any locomotive"""
+        try:
+            bk = self.model.get_bk(block_id)
+            return bool(getattr(bk, "locid", ""))
+        except (KeyError, AttributeError):
+            return False
+
+    # Logic helpers
+    def _any_of(self, checks: list[bool]) -> bool:
+        """OR logic - return True if any check is True"""
+        return any(checks)
+
+    def _all_of(self, checks: list[bool]) -> bool:
+        """AND logic - return True if all checks are True"""
+        return all(checks)
+
+    def _none_of(self, checks: list[bool]) -> bool:
+        """NOT OR logic - return True if no checks are True"""
+        return not any(checks)
+
+    # Time helpers
+    def _time_between(self, start_hour: int, end_hour: int) -> bool:
+        """Check if current time is between start and end hours (inclusive)"""
+        hour = self.model.clock.hour
+        if start_hour <= end_hour:
+            return start_hour <= hour <= end_hour
+        else:  # Wraps around midnight (e.g., 22:00 to 06:00)
+            return hour >= start_hour or hour <= end_hour
+
+    def _is_daytime(self) -> bool:
+        """Check if it's daytime (6:00 to 20:00)"""
+        return self._time_between(6, 20)
+
+    def _is_nighttime(self) -> bool:
+        """Check if it's nighttime (20:00 to 6:00)"""
+        return not self._is_daytime()
+
+    # ========== End Helper Functions ==========
+
     def _match_time_pattern(self, pattern: str | None, hour: int, minute: int) -> bool:
         """Check if current time matches the trigger pattern.
 
@@ -336,17 +588,55 @@ class PyRocrail:
             return True
 
         try:
-            # Create limited scope with safe variables
+            # Create limited scope with safe variables and helper functions
             scope = {
                 "hour": hour,
                 "minute": minute,
                 "time": hour + minute / 60.0,
                 "model": model,
-                # Add some safe builtins
+                # Safe builtins
                 "abs": abs,
                 "min": min,
                 "max": max,
                 "len": len,
+                # Helper functions
+                "is_active": self._is_active,
+                "is_inactive": self._is_inactive,
+                "is_occupied": self._is_occupied,
+                "is_free": self._is_free,
+                "is_reserved": self._is_reserved,
+                "is_straight": self._is_straight,
+                "is_turnout": self._is_turnout,
+                "is_left": self._is_left,
+                "is_right": self._is_right,
+                "is_red": self._is_red,
+                "is_green": self._is_green,
+                "is_yellow": self._is_yellow,
+                "is_white": self._is_white,
+                "is_moving": self._is_moving,
+                "is_stopped": self._is_stopped,
+                "is_forward": self._is_forward,
+                "is_reverse": self._is_reverse,
+                "speed_above": self._speed_above,
+                "speed_below": self._speed_below,
+                "speed_between": self._speed_between,
+                "is_locked": self._is_locked,
+                "is_unlocked": self._is_unlocked,
+                "is_on": self._is_on,
+                "is_off": self._is_off,
+                "count_occupied": self._count_occupied,
+                "count_active": self._count_active,
+                "count_moving": self._count_moving,
+                "any_moving": self._any_moving,
+                "all_stopped": self._all_stopped,
+                "loco_in_block": self._loco_in_block,
+                "block_has_loco": self._block_has_loco,
+                "any_of": self._any_of,
+                "all_of": self._all_of,
+                "none_of": self._none_of,
+                "time_between": self._time_between,
+                "is_daytime": self._is_daytime,
+                "is_nighttime": self._is_nighttime,
             }
             # Evaluate expression in restricted scope
             result = eval(condition, {"__builtins__": {}}, scope)
@@ -434,6 +724,44 @@ class PyRocrail:
                         "len": len,
                         "hasattr": hasattr,
                         "getattr": getattr,
+                        # Helper functions
+                        "is_active": self._is_active,
+                        "is_inactive": self._is_inactive,
+                        "is_occupied": self._is_occupied,
+                        "is_free": self._is_free,
+                        "is_reserved": self._is_reserved,
+                        "is_straight": self._is_straight,
+                        "is_turnout": self._is_turnout,
+                        "is_left": self._is_left,
+                        "is_right": self._is_right,
+                        "is_red": self._is_red,
+                        "is_green": self._is_green,
+                        "is_yellow": self._is_yellow,
+                        "is_white": self._is_white,
+                        "is_moving": self._is_moving,
+                        "is_stopped": self._is_stopped,
+                        "is_forward": self._is_forward,
+                        "is_reverse": self._is_reverse,
+                        "speed_above": self._speed_above,
+                        "speed_below": self._speed_below,
+                        "speed_between": self._speed_between,
+                        "is_locked": self._is_locked,
+                        "is_unlocked": self._is_unlocked,
+                        "is_on": self._is_on,
+                        "is_off": self._is_off,
+                        "count_occupied": self._count_occupied,
+                        "count_active": self._count_active,
+                        "count_moving": self._count_moving,
+                        "any_moving": self._any_moving,
+                        "all_stopped": self._all_stopped,
+                        "loco_in_block": self._loco_in_block,
+                        "block_has_loco": self._block_has_loco,
+                        "any_of": self._any_of,
+                        "all_of": self._all_of,
+                        "none_of": self._none_of,
+                        "time_between": self._time_between,
+                        "is_daytime": self._is_daytime,
+                        "is_nighttime": self._is_nighttime,
                     }
                     result = eval(ac.condition, {"__builtins__": {}}, scope)
                     if not result:

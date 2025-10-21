@@ -81,22 +81,24 @@ def main():
         print("\nRegistering event-based actions...")
 
         # Feedback sensor events (any sensor that becomes active)
+        # Using helper function: is_active(obj_id)
         pr.add(Action(
             script=on_sensor_activated,
             trigger_type=Trigger.EVENT,
             trigger="fb*",  # Match all feedback sensors
-            condition="obj.state == True"  # Only when sensor activates
+            condition="is_active(obj_id)"  # Helper function - cleaner!
         ))
-        print("  ✓ Sensor activation monitor")
+        print("  ✓ Sensor activation monitor (using is_active helper)")
 
         # Block occupation events (any block that becomes occupied)
+        # Using helper function: is_occupied(obj_id)
         pr.add(Action(
             script=on_block_occupied,
             trigger_type=Trigger.EVENT,
             trigger="bk*",  # Match all blocks
-            condition="hasattr(obj, 'occ') and obj.occ == True"  # Only when occupied
+            condition="is_occupied(obj_id)"  # Helper function - much cleaner!
         ))
-        print("  ✓ Block occupation monitor")
+        print("  ✓ Block occupation monitor (using is_occupied helper)")
 
         # Switch events (any switch that changes position)
         pr.add(Action(
@@ -107,13 +109,14 @@ def main():
         print("  ✓ Switch change monitor")
 
         # Specific block event (if 'station1' exists)
+        # Combining helpers with AND logic
         pr.add(Action(
             script=on_locomotive_enters_station,
             trigger_type=Trigger.EVENT,
             trigger="station1",  # Specific block ID
-            condition="hasattr(obj, 'occ') and obj.occ == True"  # Only when occupied
+            condition="is_occupied(obj_id) and count_moving() > 0"  # Multiple helpers!
         ))
-        print("  ✓ Station arrival monitor (if 'station1' exists)")
+        print("  ✓ Station arrival monitor with helper conditions")
 
         # Time-based check combined with events
         pr.add(Action(

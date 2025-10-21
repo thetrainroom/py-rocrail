@@ -61,15 +61,26 @@ class Action:
 
 
 class PyRocrail:
-    def __init__(self, ip: str = "localhost", port: int = 8051, verbose: bool = False):
+    def __init__(
+        self,
+        ip: str = "localhost",
+        port: int = 8051,
+        verbose: bool = False,
+        on_disconnect: Callable[[Model], None] | None = None,
+    ):
         """Initialize PyRocrail connection
 
         Args:
             ip: Rocrail server IP address
             port: Rocrail server port
             verbose: Enable verbose logging (prints all sent/received messages)
+            on_disconnect: Callback function called when connection to Rocrail is lost unexpectedly.
+                         Receives Model snapshot for state recovery. Use this to:
+                         - Cut power to tracks (hardware relay)
+                         - Save layout state for manual recovery
+                         - Alert operator
         """
-        self.com = Communicator(ip, port, verbose=verbose)
+        self.com = Communicator(ip, port, verbose=verbose, on_disconnect=on_disconnect)
         self.model = Model(self.com)
         self._event_actions: list[Action] = []
         self._time_actions: list[Action] = []

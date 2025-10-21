@@ -3,7 +3,7 @@ import time
 import atexit
 from socket import socket, AF_INET, SOCK_STREAM, IPPROTO_TCP, TCP_NODELAY
 import xml.etree.ElementTree as ET
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
     from pyrocrail.model import Model
@@ -14,7 +14,13 @@ def create_xml_msg(xml_type: str, xml_msg: str) -> str:
 
 
 class Communicator:
-    def __init__(self, ip: str = "localhost", port: int = 8051, verbose: bool = False):
+    def __init__(
+        self,
+        ip: str = "localhost",
+        port: int = 8051,
+        verbose: bool = False,
+        on_disconnect: Callable[["Model"], None] | None = None,
+    ):
         self.ip = ip
         self.port = port
         self.__thread = None
@@ -26,6 +32,8 @@ class Communicator:
         self.mutex = threading.Lock()
         self.verbose = verbose
         self._stopped = False
+        self.on_disconnect = on_disconnect
+        self._disconnect_called = False  # Ensure callback only called once
 
         # Register cleanup handler
         atexit.register(self.stop)
@@ -131,6 +139,7 @@ class Communicator:
                 print(f"[ERROR] {repr(e)}")
 
     def _recv(self):
+        connection_lost = False
         try:
             self.__s = socket(AF_INET, SOCK_STREAM)
             self.__s.connect((self.ip, self.port))
@@ -142,15 +151,21 @@ class Communicator:
                     with self.mutex:
                         data = self.__s.recv(2048)
                         if not data:
-                            # Connection closed
+                            # Connection closed by server
+                            if self.verbose:
+                                print("[WARNING] Connection closed by Rocrail server")
+                            connection_lost = True
                             break
                         self._byte_buffer.extend(data)
                 except KeyboardInterrupt:
                     break
                 except TimeoutError:
                     continue
-                except OSError:
-                    # Socket closed
+                except OSError as e:
+                    # Socket closed or network error
+                    if self.verbose:
+                        print(f"[WARNING] Network error: {e}")
+                    connection_lost = True
                     break
 
                 end_pos = -1
@@ -158,8 +173,27 @@ class Communicator:
                     end_pos = self._parse()
                     if end_pos:
                         self._decode(end_pos)
+        except Exception as e:
+            # Connection or network error during setup
+            if self.verbose:
+                print(f"[ERROR] Connection failed: {e}")
+            connection_lost = True
         finally:
             self.run = False
+
+            # Call disconnect callback if connection was lost unexpectedly
+            # (not due to normal shutdown via stop())
+            if connection_lost and not self._stopped and not self._disconnect_called:
+                self._disconnect_called = True
+                if self.on_disconnect and self.model:
+                    try:
+                        if self.verbose:
+                            print("[INFO] Calling disconnect handler...")
+                        self.on_disconnect(self.model)
+                    except Exception as e:
+                        if self.verbose:
+                            print(f"[ERROR] Disconnect handler failed: {e}")
+
             if self.__s is not None:
                 try:
                     self.__s.close()

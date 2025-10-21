@@ -864,3 +864,62 @@ class Model:
         # Call change callback if registered
         if self.change_callback is not None:
             self.change_callback("weather", weather_id, weather)
+
+    def export_state(self) -> dict:
+        """Export current layout state as dictionary for emergency recovery.
+
+        Returns a dictionary containing the current state of all locomotives, blocks,
+        switches, signals, and other layout elements. This state can be saved to disk
+        and used to help operators manually resync Rocrail after a connection loss.
+
+        Returns:
+            Dictionary with layout state including:
+            - timestamp: Current time
+            - clock: Rocrail clock state
+            - locomotives: List of all locos with speed, direction, position
+            - blocks: List of all blocks with occupation and reserved state
+            - switches: List of all switches with current position
+            - signals: List of all signals with current aspect
+            - routes: List of all routes with lock state
+            - feedbacks: List of all feedback sensors with state
+        """
+        import time as time_module
+
+        state = {
+            "timestamp": time_module.time(),
+            "clock": {
+                "hour": self.clock.hour,
+                "minute": self.clock.minute,
+                "divider": getattr(self.clock, "divider", 1),
+                "freeze": getattr(self.clock, "freeze", False),
+            },
+            "locomotives": [
+                {
+                    "id": lc.idx,
+                    "speed": getattr(lc, "V", 0),
+                    "direction": getattr(lc, "dir", True),
+                    "block": getattr(lc, "blockid", None),
+                    "destblock": getattr(lc, "destblockid", None),
+                    "mode": getattr(lc, "mode", None),
+                    "functions": getattr(lc, "fn", []),
+                }
+                for lc in self._lc_domain.values()
+            ],
+            "blocks": [
+                {
+                    "id": bk.idx,
+                    "occupied": getattr(bk, "occ", False),
+                    "reserved": getattr(bk, "reserved", False),
+                    "loco_id": getattr(bk, "locid", None),
+                    "state": getattr(bk, "state", None),
+                }
+                for bk in self._bk_domain.values()
+            ],
+            "switches": [{"id": sw.idx, "state": sw.state, "type": getattr(sw, "type", None)} for sw in self._sw_domain.values()],
+            "signals": [{"id": sg.idx, "aspect": getattr(sg, "aspect", None), "state": sg.state} for sg in self._sg_domain.values()],
+            "routes": [{"id": st.idx, "status": getattr(st, "status", None)} for st in self._st_domain.values()],
+            "feedbacks": [{"id": fb.idx, "state": fb.state} for fb in self._fb_domain.values()],
+            "outputs": [{"id": co.idx, "state": getattr(co, "state", None)} for co in self._co_domain.values()],
+        }
+
+        return state

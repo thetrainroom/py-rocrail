@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 import datetime
 import time
+import logging
 from dataclasses import dataclass, field
 from typing import Callable, Any
 from pyrocrail.objects.feedback import Feedback
@@ -22,6 +23,9 @@ from pyrocrail.objects.location import Location
 from pyrocrail.objects.weather import Weather
 from pyrocrail.objects import set_attr
 from pyrocrail.communicator import Communicator
+
+# Use package-level logger
+logger = logging.getLogger("pyrocrail")
 
 
 @dataclass
@@ -63,14 +67,14 @@ class Model:
         self.communicator.send("model", '<model cmd="plan"/>')
         while not self.plan_recv:
             time.sleep(0.1)
-        print("Model OK")
+        logger.info("Model initialized successfully")
 
     def decode(self, xml: ET.Element) -> None:
         for child in xml:
             if child.tag == "clock":
                 self._recv_clock(child)
             elif child.tag == "plan":
-                print(f"Rocrail Plan {child.attrib['title']} Version: {child.attrib['rocrailversion']}")
+                logger.info(f"Loaded plan '{child.attrib['title']}' (Rocrail {child.attrib['rocrailversion']})")
                 self.build(child)
             elif child.tag == "lc":
                 # Locomotive state update
@@ -359,7 +363,7 @@ class Model:
         self.curr_time = self.clock.hour + self.clock.minute / 60
         if self.time_callback is not None:
             self.time_callback()
-        print("Time")
+        logger.debug(f"Clock update: {self.clock.hour:02d}:{self.clock.minute:02d}")
 
     def _build_co(self, colist: ET.Element):
         for child in colist:
@@ -452,12 +456,12 @@ class Model:
         lc_id = lc_xml.attrib.get("id")
 
         if not lc_id:
-            print(f"Warning: Locomotive update without id: {ET.tostring(lc_xml, encoding='unicode')[:100]}")
+            logger.warning(f"Locomotive update without id: {ET.tostring(lc_xml, encoding='unicode')[:100]}")
             return
 
         # Check if locomotive exists
         if lc_id not in self._lc_domain:
-            print(f"Warning: Received update for unknown locomotive: {lc_id}")
+            logger.warning(f"Received update for unknown locomotive: {lc_id}")
             return
 
         # Update locomotive attributes
@@ -476,12 +480,12 @@ class Model:
         fb_id = fb_xml.attrib.get("id")
 
         if not fb_id:
-            print(f"Warning: Feedback update without id: {ET.tostring(fb_xml, encoding='unicode')[:100]}")
+            logger.warning(f"Feedback update without id: {ET.tostring(fb_xml, encoding='unicode')[:100]}")
             return
 
         # Check if feedback exists
         if fb_id not in self._fb_domain:
-            print(f"Warning: Received update for unknown feedback sensor: {fb_id}")
+            logger.warning(f"Received update for unknown feedback sensor: {fb_id}")
             return
 
         # Update feedback attributes
@@ -500,12 +504,12 @@ class Model:
         bk_id = bk_xml.attrib.get("id")
 
         if not bk_id:
-            print(f"Warning: Block update without id: {ET.tostring(bk_xml, encoding='unicode')[:100]}")
+            logger.warning(f"Block update without id: {ET.tostring(bk_xml, encoding='unicode')[:100]}")
             return
 
         # Check if block exists
         if bk_id not in self._bk_domain:
-            print(f"Warning: Received update for unknown block: {bk_id}")
+            logger.warning(f"Received update for unknown block: {bk_id}")
             return
 
         # Update block attributes
@@ -524,12 +528,12 @@ class Model:
         sw_id = sw_xml.attrib.get("id")
 
         if not sw_id:
-            print(f"Warning: Switch update without id: {ET.tostring(sw_xml, encoding='unicode')[:100]}")
+            logger.warning(f"Switch update without id: {ET.tostring(sw_xml, encoding='unicode')[:100]}")
             return
 
         # Check if switch exists
         if sw_id not in self._sw_domain:
-            print(f"Warning: Received update for unknown switch: {sw_id}")
+            logger.warning(f"Received update for unknown switch: {sw_id}")
             return
 
         # Update switch attributes
@@ -548,12 +552,12 @@ class Model:
         sg_id = sg_xml.attrib.get("id")
 
         if not sg_id:
-            print(f"Warning: Signal update without id: {ET.tostring(sg_xml, encoding='unicode')[:100]}")
+            logger.warning(f"Signal update without id: {ET.tostring(sg_xml, encoding='unicode')[:100]}")
             return
 
         # Check if signal exists
         if sg_id not in self._sg_domain:
-            print(f"Warning: Received update for unknown signal: {sg_id}")
+            logger.warning(f"Received update for unknown signal: {sg_id}")
             return
 
         # Update signal attributes
@@ -572,12 +576,12 @@ class Model:
         st_id = st_xml.attrib.get("id")
 
         if not st_id:
-            print(f"Warning: Route update without id: {ET.tostring(st_xml, encoding='unicode')[:100]}")
+            logger.warning(f"Route update without id: {ET.tostring(st_xml, encoding='unicode')[:100]}")
             return
 
         # Check if route exists
         if st_id not in self._st_domain:
-            print(f"Warning: Received update for unknown route: {st_id}")
+            logger.warning(f"Received update for unknown route: {st_id}")
             return
 
         # Update route attributes
@@ -596,12 +600,12 @@ class Model:
         car_id = car_xml.attrib.get("id")
 
         if not car_id:
-            print(f"Warning: Car update without id: {ET.tostring(car_xml, encoding='unicode')[:100]}")
+            logger.warning(f"Car update without id: {ET.tostring(car_xml, encoding='unicode')[:100]}")
             return
 
         # Check if car exists
         if car_id not in self._car_domain:
-            print(f"Warning: Received update for unknown car: {car_id}")
+            logger.warning(f"Received update for unknown car: {car_id}")
             return
 
         # Update car attributes
@@ -620,12 +624,12 @@ class Model:
         operator_id = operator_xml.attrib.get("id")
 
         if not operator_id:
-            print(f"Warning: Operator update without id: {ET.tostring(operator_xml, encoding='unicode')[:100]}")
+            logger.warning(f"Operator update without id: {ET.tostring(operator_xml, encoding='unicode')[:100]}")
             return
 
         # Check if operator exists
         if operator_id not in self._operator_domain:
-            print(f"Warning: Received update for unknown operator: {operator_id}")
+            logger.warning(f"Received update for unknown operator: {operator_id}")
             return
 
         # Update operator attributes
@@ -648,12 +652,12 @@ class Model:
         sc_id = sc_xml.attrib.get("id")
 
         if not sc_id:
-            print(f"Warning: Schedule update without id: {ET.tostring(sc_xml, encoding='unicode')[:100]}")
+            logger.warning(f"Schedule update without id: {ET.tostring(sc_xml, encoding='unicode')[:100]}")
             return
 
         # Check if schedule exists
         if sc_id not in self._sc_domain:
-            print(f"Warning: Received update for unknown schedule: {sc_id}")
+            logger.warning(f"Received update for unknown schedule: {sc_id}")
             return
 
         # Update schedule attributes
@@ -676,12 +680,12 @@ class Model:
         sb_id = sb_xml.attrib.get("id")
 
         if not sb_id:
-            print(f"Warning: Stage block update without id: {ET.tostring(sb_xml, encoding='unicode')[:100]}")
+            logger.warning(f"Stage block update without id: {ET.tostring(sb_xml, encoding='unicode')[:100]}")
             return
 
         # Check if stage exists
         if sb_id not in self._sb_domain:
-            print(f"Warning: Received update for unknown stage block: {sb_id}")
+            logger.warning(f"Received update for unknown stage block: {sb_id}")
             return
 
         # Update stage attributes
@@ -714,16 +718,24 @@ class Model:
         obj_id = exception_xml.attrib.get("id", "")
 
         # Format exception message
-        msg_parts = [f"Rocrail {level.upper()}"]
+        msg_parts = []
         if code:
             msg_parts.append(f"[{code}]")
         if obj_id:
             msg_parts.append(f"(object: {obj_id})")
         if text:
-            msg_parts.append(f": {text}")
+            msg_parts.append(text)
+        msg = " ".join(msg_parts) if msg_parts else "Unknown error"
 
-        # Print to log
-        print(" ".join(msg_parts))
+        # Map Rocrail exception level to Python logging level
+        if level == "exception":
+            logger.error(f"Rocrail exception: {msg}")
+        elif level == "warning":
+            logger.warning(f"Rocrail warning: {msg}")
+        elif level == "info":
+            logger.info(f"Rocrail: {msg}")
+        else:
+            logger.warning(f"Rocrail {level}: {msg}")
 
     def _handle_sys(self, sys_xml: ET.Element):
         """Handle system messages from server
@@ -739,7 +751,7 @@ class Model:
         if cmd == "shutdown":
             # Server is shutting down gracefully
             self.server_shutting_down = True
-            print("Rocrail INFO: Server shutting down gracefully")
+            logger.info("Server shutting down gracefully")
         # Other system commands can be logged but don't require special handling
         # as they're typically sent by us, not by the server
 
@@ -748,12 +760,12 @@ class Model:
         tx_id = tx_xml.attrib.get("id")
 
         if not tx_id:
-            print(f"Warning: Text display update without id: {ET.tostring(tx_xml, encoding='unicode')[:100]}")
+            logger.warning(f"Text display update without id: {ET.tostring(tx_xml, encoding='unicode')[:100]}")
             return
 
         # Check if text exists
         if tx_id not in self._tx_domain:
-            print(f"Warning: Received update for unknown text display: {tx_id}")
+            logger.warning(f"Received update for unknown text display: {tx_id}")
             return
 
         # Update text attributes
@@ -772,12 +784,12 @@ class Model:
         bstr_id = bstr_xml.attrib.get("id")
 
         if not bstr_id:
-            print(f"Warning: Booster update without id: {ET.tostring(bstr_xml, encoding='unicode')[:100]}")
+            logger.warning(f"Booster update without id: {ET.tostring(bstr_xml, encoding='unicode')[:100]}")
             return
 
         # Check if booster exists
         if bstr_id not in self._bstr_domain:
-            print(f"Warning: Received update for unknown booster: {bstr_id}")
+            logger.warning(f"Received update for unknown booster: {bstr_id}")
             return
 
         # Update booster attributes
@@ -796,12 +808,12 @@ class Model:
         vr_id = vr_xml.attrib.get("id")
 
         if not vr_id:
-            print(f"Warning: Variable update without id: {ET.tostring(vr_xml, encoding='unicode')[:100]}")
+            logger.warning(f"Variable update without id: {ET.tostring(vr_xml, encoding='unicode')[:100]}")
             return
 
         # Check if variable exists
         if vr_id not in self._vr_domain:
-            print(f"Warning: Received update for unknown variable: {vr_id}")
+            logger.warning(f"Received update for unknown variable: {vr_id}")
             return
 
         # Update variable attributes
@@ -820,12 +832,12 @@ class Model:
         tour_id = tour_xml.attrib.get("id")
 
         if not tour_id:
-            print(f"Warning: Tour update without id: {ET.tostring(tour_xml, encoding='unicode')[:100]}")
+            logger.warning(f"Tour update without id: {ET.tostring(tour_xml, encoding='unicode')[:100]}")
             return
 
         # Check if tour exists
         if tour_id not in self._tour_domain:
-            print(f"Warning: Received update for unknown tour: {tour_id}")
+            logger.warning(f"Received update for unknown tour: {tour_id}")
             return
 
         # Update tour attributes
@@ -844,12 +856,12 @@ class Model:
         location_id = location_xml.attrib.get("id")
 
         if not location_id:
-            print(f"Warning: Location update without id: {ET.tostring(location_xml, encoding='unicode')[:100]}")
+            logger.warning(f"Location update without id: {ET.tostring(location_xml, encoding='unicode')[:100]}")
             return
 
         # Check if location exists
         if location_id not in self._location_domain:
-            print(f"Warning: Received update for unknown location: {location_id}")
+            logger.warning(f"Received update for unknown location: {location_id}")
             return
 
         # Update location attributes
@@ -868,12 +880,12 @@ class Model:
         weather_id = weather_xml.attrib.get("id")
 
         if not weather_id:
-            print(f"Warning: Weather update without id: {ET.tostring(weather_xml, encoding='unicode')[:100]}")
+            logger.warning(f"Weather update without id: {ET.tostring(weather_xml, encoding='unicode')[:100]}")
             return
 
         # Check if weather exists
         if weather_id not in self._weather_domain:
-            print(f"Warning: Received update for unknown weather: {weather_id}")
+            logger.warning(f"Received update for unknown weather: {weather_id}")
             return
 
         # Update weather attributes

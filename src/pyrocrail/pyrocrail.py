@@ -1,6 +1,7 @@
 import time
 import re
 import atexit
+import logging
 from typing import Callable
 from enum import Enum
 import threading
@@ -8,6 +9,9 @@ from concurrent.futures import ThreadPoolExecutor, Future
 
 from pyrocrail.model import Model
 from pyrocrail.communicator import Communicator
+
+# Use package-level logger
+logger = logging.getLogger("pyrocrail")
 
 
 class Trigger(Enum):
@@ -653,9 +657,7 @@ class PyRocrail:
             result = eval(condition, {"__builtins__": {}}, scope)
             return bool(result)
         except Exception as e:
-            if self.verbose:
-                print(f"Warning: Condition evaluation failed: {condition}")
-                print(f"  Error: {e}")
+            logger.warning(f"Condition evaluation failed: {condition} - Error: {e}")
             return False
 
     def _match_object_pattern(self, pattern: str | None, obj_id: str) -> bool:
@@ -778,9 +780,7 @@ class PyRocrail:
                     if not result:
                         continue
                 except Exception as e:
-                    if self.verbose:
-                        print(f"Warning: Event condition evaluation failed: {ac.condition}")
-                        print(f"  Error: {e}")
+                    logger.warning(f"Event condition evaluation failed: {ac.condition} - Error: {e}")
                     continue
 
             # Execute action
@@ -826,12 +826,10 @@ class PyRocrail:
                             try:
                                 action.on_error(exp, elapsed)
                             except Exception as callback_err:
-                                if self.verbose:
-                                    print(f"  Error callback failed: {repr(callback_err)}")
+                                logger.error(f"Error callback failed: {repr(callback_err)}")
                         else:
                             # Only print if no callback registered
-                            if self.verbose:
-                                print(f"Action '{action.name if action else 'unknown'}' failed: {repr(exp)}")
+                            logger.error(f"Action '{action.name if action else 'unknown'}' failed: {repr(exp)}")
                     else:
                         # Action succeeded
                         result = future.result()
@@ -839,8 +837,7 @@ class PyRocrail:
                             try:
                                 action.on_success(result, elapsed)
                             except Exception as callback_err:
-                                if self.verbose:
-                                    print(f"  Success callback failed: {repr(callback_err)}")
+                                logger.error(f"Success callback failed: {repr(callback_err)}")
                     continue
 
                 # Check timeout
@@ -851,12 +848,10 @@ class PyRocrail:
                         try:
                             action.on_error(TimeoutError(f"Timeout after {elapsed:.1f}s"), elapsed)
                         except Exception as callback_err:
-                            if self.verbose:
-                                print(f"  Error callback failed: {repr(callback_err)}")
+                            logger.error(f"Error callback failed: {repr(callback_err)}")
                     else:
                         # Only print if no callback registered
-                        if self.verbose:
-                            print(f"Warning: Action '{action.name if action else 'unknown'}' timeout after {elapsed:.1f}s (limit: {timeout}s)")
+                        logger.warning(f"Action '{action.name if action else 'unknown'}' timeout after {elapsed:.1f}s (limit: {timeout}s)")
                     continue
 
                 # Still running, put back in queue

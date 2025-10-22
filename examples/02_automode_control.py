@@ -13,7 +13,11 @@ Requirements:
 """
 
 import time
+import logging  # noqa: F401 - Imported for user to configure if needed
 from pyrocrail.pyrocrail import PyRocrail
+
+# Optional: Configure logging to see PyRocrail internal messages
+# logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
 
 def main():

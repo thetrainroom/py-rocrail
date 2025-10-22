@@ -7,7 +7,12 @@ All commands marked with TODO comments need verification against actual Rocrail 
 """
 
 import time
+import logging  # noqa: F401 - Imported for user to configure if needed
 from pyrocrail import PyRocrail, Action, Trigger
+
+# Optional: Configure logging to see PyRocrail internal messages
+# logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+# Use logging.DEBUG to see all protocol messages (same as verbose=True)
 
 
 def locomotive_example(model):

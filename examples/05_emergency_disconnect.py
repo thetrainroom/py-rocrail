@@ -19,8 +19,15 @@ You MUST use hardware-level emergency stop (relay, circuit breaker, etc.)
 
 import time
 import json
+import logging
 from datetime import datetime
 from pyrocrail.pyrocrail import PyRocrail
+
+# Configure logging to see verbose output from PyRocrail
+# verbose=True sets logger to DEBUG level, which shows all protocol messages
+# You can also configure it manually:
+# logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s')
 
 
 def emergency_disconnect_handler(model):
@@ -153,7 +160,7 @@ def main():
         pr = PyRocrail(
             "localhost",
             8051,
-            verbose=True,  # Enable verbose logging to see connection events
+            verbose=True,  # Enable DEBUG-level logging (shows all protocol messages)
             on_disconnect=emergency_disconnect_handler,  # Register emergency handler
         )
 

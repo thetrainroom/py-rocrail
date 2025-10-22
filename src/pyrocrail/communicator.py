@@ -1,12 +1,16 @@
 import threading
 import time
 import atexit
+import logging
 from socket import socket, AF_INET, SOCK_STREAM, IPPROTO_TCP, TCP_NODELAY
 import xml.etree.ElementTree as ET
 from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
     from pyrocrail.model import Model
+
+# Use package-level logger
+logger = logging.getLogger("pyrocrail")
 
 
 def create_xml_msg(xml_type: str, xml_msg: str) -> str:
@@ -30,10 +34,17 @@ class Communicator:
         self.__s: socket | None = None
         self.model: "Model | None" = None
         self.mutex = threading.Lock()
-        self.verbose = verbose
         self._stopped = False
         self.on_disconnect = on_disconnect
         self._disconnect_called = False  # Ensure callback only called once
+
+        # Configure logging level based on verbose flag
+        # verbose=True -> DEBUG (show all protocol messages)
+        # verbose=False -> WARNING (default, only show issues)
+        if verbose:
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.WARNING)  # Explicitly set WARNING as default
 
         # Register cleanup handler
         atexit.register(self.stop)
@@ -55,8 +66,7 @@ class Communicator:
     def send(self, xml_type: str, xml_msg: str) -> str:
         assert self.__s is not None
         xml = create_xml_msg(xml_type, xml_msg)
-        if self.verbose:
-            print(f"[SEND] {xml}")
+        logger.debug(f"SEND: {xml}")
         with self.mutex:
             self.__s.send(xml.encode("utf-8"))
         return xml
@@ -66,8 +76,7 @@ class Communicator:
         self.__thread.start()
         while not self.run:
             time.sleep(0.001)
-        if self.verbose:
-            print(f"[INFO] Connected to {self.ip}:{self.port}")
+        logger.info(f"Connected to Rocrail at {self.ip}:{self.port}")
 
     def stop(self):
         """Stop communicator and cleanup resources
@@ -132,11 +141,9 @@ class Communicator:
             root = ET.fromstring(r)
             assert self.model is not None
             self.model.decode(root)
-            if self.verbose:
-                print(f"[RECV] {ET.tostring(root, encoding='unicode')[:200]}...")
+            logger.debug(f"RECV: {ET.tostring(root, encoding='unicode')[:200]}...")
         except Exception as e:
-            if self.verbose:
-                print(f"[ERROR] {repr(e)}")
+            logger.error(f"XML decode error: {repr(e)}")
 
     def _recv(self):
         connection_lost = False
@@ -152,8 +159,7 @@ class Communicator:
                         data = self.__s.recv(2048)
                         if not data:
                             # Connection closed by server
-                            if self.verbose:
-                                print("[WARNING] Connection closed by Rocrail server")
+                            logger.warning("Connection closed by Rocrail server")
                             connection_lost = True
                             break
                         self._byte_buffer.extend(data)
@@ -163,8 +169,7 @@ class Communicator:
                     continue
                 except OSError as e:
                     # Socket closed or network error
-                    if self.verbose:
-                        print(f"[WARNING] Network error: {e}")
+                    logger.warning(f"Network error: {e}")
                     connection_lost = True
                     break
 
@@ -175,8 +180,7 @@ class Communicator:
                         self._decode(end_pos)
         except Exception as e:
             # Connection or network error during setup
-            if self.verbose:
-                print(f"[ERROR] Connection failed: {e}")
+            logger.error(f"Connection failed: {e}")
             connection_lost = True
         finally:
             self.run = False
@@ -191,17 +195,14 @@ class Communicator:
 
                 if graceful_shutdown:
                     # Server shut down properly - no emergency action needed
-                    if self.verbose:
-                        print("[INFO] Server shutdown was graceful - emergency handler not called")
+                    logger.info("Server shutdown was graceful - emergency handler not called")
                 elif self.on_disconnect and self.model:
                     # Unexpected disconnect - call emergency handler!
                     try:
-                        if self.verbose:
-                            print("[EMERGENCY] Unexpected disconnect - calling emergency handler...")
+                        logger.critical("UNEXPECTED DISCONNECT - Calling emergency handler")
                         self.on_disconnect(self.model)
                     except Exception as e:
-                        if self.verbose:
-                            print(f"[ERROR] Disconnect handler failed: {e}")
+                        logger.error(f"Disconnect handler failed: {e}")
 
             if self.__s is not None:
                 try:

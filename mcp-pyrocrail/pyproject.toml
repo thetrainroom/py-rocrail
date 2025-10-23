@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "mcp-pyrocrail"
+version = "0.1.0"
+description = "MCP server for PyRocrail development assistance"
+authors = ["PyRocrail Contributors"]
+readme = "README.md"
+packages = [{include = "mcp_pyrocrail", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+mcp = "^1.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+mypy = "^1.8.0"
+ruff = "^0.5.0"
+pytest-asyncio = "^0.24.0"
+
+[tool.poetry.scripts]
+mcp-pyrocrail = "mcp_pyrocrail.server:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

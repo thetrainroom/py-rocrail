@@ -142,6 +142,50 @@ def test_locomotive_control(rocrail_server):
     pr.power_off()
 
 
+def test_locomotive_functions(rocrail_server):
+    """Test locomotive function commands (F0-F31)
+
+    This verifies the fixed set_function() method that uses <fn> tag format
+    with all function states as required by Rocrail protocol.
+    """
+    pr = rocrail_server
+
+    loco = pr.model.get_lc("Loc1")
+
+    # Power on first
+    pr.power_on()
+    time.sleep(0.5)
+
+    # Test function 0 (lights)
+    loco.set_function(0, True)
+    time.sleep(0.5)
+
+    loco.set_function(0, False)
+    time.sleep(0.5)
+
+    # Test function 1
+    loco.set_function(1, True)
+    time.sleep(0.5)
+
+    loco.set_function(1, False)
+    time.sleep(0.5)
+
+    # Test multiple functions at once
+    loco.set_function(0, True)
+    loco.set_function(1, True)
+    loco.set_function(2, True)
+    time.sleep(0.5)
+
+    # Turn all off
+    loco.set_function(0, False)
+    loco.set_function(1, False)
+    loco.set_function(2, False)
+    time.sleep(0.5)
+
+    # Power off
+    pr.power_off()
+
+
 def test_switch_control(rocrail_server):
     """Test switch control commands"""
     pr = rocrail_server

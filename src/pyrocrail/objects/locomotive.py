@@ -59,14 +59,33 @@ class Locomotive:
         self.V = 0
 
     def set_function(self, fn_num: int, state: bool) -> None:
-        """Set function state"""
-        # TODO: Verify function command format
-        state_str = "true" if state else "false"
-        cmd = f'<lc id="{self.idx}" fn="{fn_num}" fnstate="{state_str}"/>'
-        self.communicator.send("lc", cmd)
+        """Set function state
+
+        Args:
+            fn_num: Function number (0-31)
+            state: True for on, False for off
+
+        Note:
+            Uses <fn> tag format with all function states as required by Rocrail protocol
+        """
+        # Initialize fn dict if needed
         if not hasattr(self, "fn") or not isinstance(self.fn, dict):
             self.fn = {}
+
+        # Update function state
         self.fn[fn_num] = state
+
+        # Build function state attributes (f0 through f31)
+        fn_attrs = []
+        for i in range(32):
+            fn_state = "true" if self.fn.get(i, False) else "false"
+            fn_attrs.append(f'f{i}="{fn_state}"')
+
+        state_str = "true" if state else "false"
+
+        # Build complete <fn> command with all required attributes
+        cmd = f'<fn id="{self.idx}" fnchanged="{fn_num}" fnchangedstate="{state_str}" {" ".join(fn_attrs)}/>'
+        self.communicator.send("fn", cmd)
 
     def go_forward(self, speed: int | None = None) -> None:
         """Move forward at specified speed"""

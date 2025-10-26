@@ -62,7 +62,7 @@ Emergency stop (speed to 0).
 ```python
 loco.set_function(fn_num: int, state: bool) -> None
 ```
-Control function (F0-F28).
+Control function (F0-F31). Uses `<fn>` tag format with all function states as required by Rocrail protocol.
 
 ```python
 loco.go_forward(speed: int | None = None) -> None
@@ -590,6 +590,12 @@ car.reset_waybill() -> None
 ```
 Reset/clear waybill assignment (cmd="resetwaybill").
 
+#### Decoder Functions (for cars with lighting/sound)
+```python
+car.set_function(fn_num: int, state: bool) -> None
+```
+Control decoder function (F0-F31). Cars with decoders can have functions for interior lights, sound effects, etc. Uses `<fn>` tag format with all function states as required by Rocrail protocol.
+
 ### Key Attributes
 - `idx`: Car ID
 - `status`: Car status (empty/loaded/maintenance)
@@ -600,6 +606,11 @@ Reset/clear waybill assignment (cmd="resetwaybill").
 - `len`: Car length
 - `weight_empty`: Empty weight
 - `weight_loaded`: Loaded weight
+- `addr`: Decoder address (0 = no decoder)
+- `fncnt`: Function count (typically 32)
+- `fn`: Function states dict
+- `uselights`: Use lights flag
+- `fnlights`: Function number for lights
 
 ### Example Usage
 ```python
@@ -616,6 +627,12 @@ car.reset_waybill()
 
 # Maintenance
 car.maintenance()
+
+# Decoder functions (for cars with lighting/sound decoders)
+passenger_car = pr.model.get_car("PassengerCoach1")
+passenger_car.set_function(0, True)   # Turn on interior lights
+passenger_car.set_function(1, True)   # Turn on sound effects
+passenger_car.set_function(0, False)  # Turn off lights
 ```
 
 ---

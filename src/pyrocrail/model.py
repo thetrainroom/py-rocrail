@@ -706,13 +706,19 @@ class Model:
     def _handle_exception(self, exception_xml: ET.Element):
         """Handle exception/error messages from server
 
-        Exception messages typically contain level, code, and text attributes.
-        Common exception types:
-        - level="exception": Critical errors
-        - level="warning": Non-critical warnings
-        - level="info": Informational messages
+        Exception messages contain level, code, and text attributes.
+
+        Rocrail uses numeric bit flags for levels:
+        - 1 (0x0001): EXCEPTION - Critical errors
+        - 2 (0x0002): WARNING - Non-critical warnings
+        - 4 (0x0004): INFO - Informational messages
+        - 8 (0x0008): BYTE - Byte-level tracing
+        - 16384 (0x4000): DEBUG - Debug/trace messages (function acks, etc.)
+
+        Also supports string levels for backward compatibility:
+        - "exception", "warning", "info"
         """
-        level = exception_xml.attrib.get("level", "unknown")
+        level_str = exception_xml.attrib.get("level", "unknown")
         code = exception_xml.attrib.get("code", "")
         text = exception_xml.attrib.get("text", "")
         obj_id = exception_xml.attrib.get("id", "")
@@ -727,15 +733,33 @@ class Model:
             msg_parts.append(text)
         msg = " ".join(msg_parts) if msg_parts else "Unknown error"
 
-        # Map Rocrail exception level to Python logging level
-        if level == "exception":
-            logger.error(f"Rocrail exception: {msg}")
-        elif level == "warning":
-            logger.warning(f"Rocrail warning: {msg}")
-        elif level == "info":
-            logger.info(f"Rocrail: {msg}")
-        else:
-            logger.warning(f"Rocrail {level}: {msg}")
+        # Try to parse level as numeric (Rocrail uses bit flags)
+        try:
+            level_num = int(level_str)
+
+            # Map numeric Rocrail levels to Python logging levels
+            if level_num & 0x0001:  # EXCEPTION bit
+                logger.error(f"Rocrail exception: {msg}")
+            elif level_num & 0x0002:  # WARNING bit
+                logger.warning(f"Rocrail warning: {msg}")
+            elif level_num & 0x0004:  # INFO bit
+                logger.info(f"Rocrail info: {msg}")
+            elif level_num & 0x4000:  # DEBUG bit (16384)
+                logger.debug(f"Rocrail debug: {msg}")
+            else:
+                # Other flags (BYTE, AUTO, CALC, MONITOR, PARSE)
+                logger.debug(f"Rocrail [{level_num}]: {msg}")
+
+        except ValueError:
+            # String-based level (backward compatibility)
+            if level_str == "exception":
+                logger.error(f"Rocrail exception: {msg}")
+            elif level_str == "warning":
+                logger.warning(f"Rocrail warning: {msg}")
+            elif level_str == "info":
+                logger.info(f"Rocrail info: {msg}")
+            else:
+                logger.info(f"Rocrail {level_str}: {msg}")
 
     def _handle_sys(self, sys_xml: ET.Element):
         """Handle system messages from server

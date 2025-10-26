@@ -6,7 +6,6 @@ mapped to Python logging levels.
 """
 
 import xml.etree.ElementTree as ET
-import logging
 from unittest.mock import MagicMock, patch
 from pyrocrail.model import Model
 

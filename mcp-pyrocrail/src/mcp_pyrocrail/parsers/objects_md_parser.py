@@ -126,7 +126,7 @@ class ObjectsMdParser:
 
                 # Check for end of code block
                 elif line.strip() == '```':
-                    in_code_block = False
+                    in_code_block = False  # noqa: F841
                     i += 1
                     # After code block, collect description lines
                     while i < len(lines):

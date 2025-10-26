@@ -1,7 +1,5 @@
 """Documentation lookup tools"""
 
-from pathlib import Path
-from typing import Any
 
 from ..parsers.objects_md_parser import ObjectsMdParser, ObjectInfo
 
@@ -152,12 +150,12 @@ class DocsLookup:
         """Format complete object overview"""
         lines = [
             f"# {obj.name}",
-            f"",
+            "",
             f"**Element**: `<{obj.element}>`",
             f"**File**: `{obj.file_path}`",
-            f"",
+            "",
             f"**Description**: {obj.description}",
-            f"",
+            "",
         ]
 
         if obj.official_docs:
@@ -184,7 +182,7 @@ class DocsLookup:
                 lines.append(f"... and {len(obj.attributes) - 5} more attributes")
             lines.append("")
 
-        lines.append(f"Use pyrocrail_list_methods to see all methods")
+        lines.append("Use pyrocrail_list_methods to see all methods")
         lines.append(f"See OBJECTS.md#{obj.name.lower()} for complete documentation")
 
         return '\n'.join(lines)
@@ -202,7 +200,7 @@ class DocsLookup:
 
         lines = [
             f"{obj.name}.{method}({params}) -> {return_type}",
-            f"",
+            "",
             desc,
         ]
 
@@ -211,7 +209,7 @@ class DocsLookup:
 
         # Try to extract example from main examples section
         if obj.examples and method in obj.examples:
-            lines.append(f"\nExample:")
+            lines.append("\nExample:")
             # Find relevant example snippet
             example_lines = []
             in_relevant = False

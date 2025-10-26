@@ -140,7 +140,7 @@ def test_locomotive_multiple_functions():
             print("  [+] F5=ON set correctly")
             return True
         else:
-            print(f"\n(FAIL) Function states not preserved")
+            print("\n(FAIL) Function states not preserved")
             print(f"  Message: {message_xml[:200]}...")
             return False
     else:

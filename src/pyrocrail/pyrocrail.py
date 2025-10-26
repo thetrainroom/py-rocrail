@@ -257,6 +257,50 @@ class PyRocrail:
         """
         self.com.send("sys", '<sys cmd="locliste"/>')
 
+    def start_locomotive_in_block(self, block_id: str) -> bool:
+        """Start the locomotive in a block or staging block
+
+        Automatically detects whether the ID refers to a regular block or
+        staging block and starts the appropriate locomotive:
+        - Regular block: Starts the locomotive in block.locid
+        - Staging block: Expands the staging yard and starts the exit locomotive
+
+        Args:
+            block_id: Block ID or staging block ID (names are unique)
+
+        Returns:
+            True if locomotive was started, False if block/stage is empty or not found
+
+        Example:
+            pr.start_locomotive_in_block("BK01")    # Regular block
+            pr.start_locomotive_in_block("SB_T0")   # Staging block
+        """
+        # Try as regular block first
+        block = self.model.get_bk(block_id)
+        if block:
+            if block.locid:
+                loco = self.model.get_lc(block.locid)
+                if loco:
+                    loco.go()
+                    return True
+            return False
+
+        # Try as staging block
+        stage = self.model.get_stage(block_id)
+        if stage:
+            exit_loco_id = stage.get_exit_locomotive()
+            if exit_loco_id:
+                stage.expand()  # Activate train in exit section
+                loco = self.model.get_lc(exit_loco_id)
+                if loco:
+                    loco.go()
+                    return True
+            return False
+
+        # Neither block nor staging block found
+        logger.warning(f"Block or staging block '{block_id}' not found")
+        return False
+
     def add(self, action: Action) -> None:
         if action.trigger_type == Trigger.TIME:
             self._time_actions.append(action)

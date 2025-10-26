@@ -172,11 +172,6 @@ block.free() -> None
 Free/release the block (cmd="free").
 
 ```python
-block.go() -> None
-```
-Give go permission to locomotive (cmd="go").
-
-```python
 block.stop() -> None
 ```
 Stop locomotive in block (cmd="stop").
@@ -209,7 +204,13 @@ block = pr.model.get_bk("BK01")
 
 # Reserve for locomotive
 block.reserve("BR01")
-block.go()
+
+# Start the locomotive in block (helper function)
+pr.start_locomotive_in_block("BK01")
+
+# Or manually:
+loco = pr.model.get_lc(block.locid)
+loco.go()
 
 # Close block
 block.close()
@@ -770,11 +771,6 @@ stage.expand() -> None
 Activate train in end section if exit is open (cmd="expand").
 
 ```python
-stage.go() -> None
-```
-Give go permission (cmd="go").
-
-```python
 stage.open() -> None
 stage.close() -> None
 ```
@@ -870,9 +866,6 @@ stage.close()
 # Compress trains
 stage.compress()
 
-# Release train
-stage.go()
-
 # Query sections
 print(f"Staging yard has {stage.get_section_count()} sections")
 print(f"Occupied: {len(stage.get_occupied_sections())}")
@@ -901,10 +894,14 @@ exit_loco = stage.get_exit_locomotive()
 print(f"Front locomotive (entered first): {front_loco}")
 print(f"Exit locomotive (ready to depart): {exit_loco}")
 
-# Depart the exit locomotive
+# Depart the exit locomotive (helper function)
+pr.start_locomotive_in_block("SB_T0")
+
+# Or manually:
 if exit_loco:
     stage.expand()  # Activate train in exit section
-    stage.go()      # Give go permission
+    loco = pr.model.get_lc(exit_loco)
+    loco.go()  # Start the locomotive
 ```
 
 ---

@@ -176,11 +176,6 @@ class Stage:
         self.communicator.send("sb", cmd)
         self.reserved = False
 
-    def go(self):
-        """Give go permission to train in staging block"""
-        cmd = f'<sb id="{self.idx}" cmd="go"/>'
-        self.communicator.send("sb", cmd)
-
     # Section query methods
 
     def get_section(self, section_id: str) -> Section | None:

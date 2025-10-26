@@ -55,11 +55,6 @@ class Block:
         self.locid = ""
         self.state = "free"
 
-    def go(self):
-        """Give go permission to locomotive in block"""
-        cmd = f'<bk id="{self.idx}" cmd="go"/>'
-        self.communicator.send("bk", cmd)
-
     def stop(self):
         """Stop locomotive in block"""
         cmd = f'<bk id="{self.idx}" cmd="stop"/>'

@@ -785,6 +785,57 @@ stage.free() -> None
 ```
 Free the staging block (cmd="free").
 
+#### Section Query Methods
+```python
+stage.get_section(section_id: str) -> Section | None
+```
+Get section by ID (e.g., "T0_0").
+
+```python
+stage.get_section_by_number(nr: int) -> Section | None
+```
+Get section by number (0-indexed).
+
+```python
+stage.get_occupied_sections() -> list[Section]
+```
+Get all sections with locomotives.
+
+```python
+stage.get_free_sections() -> list[Section]
+```
+Get all empty sections.
+
+```python
+stage.get_section_count() -> int
+```
+Get total number of sections.
+
+```python
+stage.get_locomotives_in_staging() -> list[str]
+```
+Get list of locomotive IDs in staging yard.
+
+```python
+stage.get_front_locomotive() -> str | None
+```
+Get locomotive at front/entry (lowest numbered occupied section).
+
+```python
+stage.get_exit_locomotive() -> str | None
+```
+Get locomotive ready to depart (highest numbered occupied section).
+
+```python
+stage.get_entry_section() -> Section | None
+```
+Get entry section (section 0).
+
+```python
+stage.get_exit_section() -> Section | None
+```
+Get exit section (highest numbered section).
+
 ### Key Attributes
 - `idx`: Stage ID
 - `state`: Current state (open/closed)
@@ -792,14 +843,23 @@ Free the staging block (cmd="free").
 - `reserved`: Reserved flag
 - `totallength`: Total yard length
 - `totalsections`: Number of sections
+- `sections`: List of Section objects
 - `fbenterid`: Entry feedback sensor
 - `entersignal`: Entry signal
 - `exitsignal`: Exit signal
 
+### Section Attributes
+Each section in `stage.sections` has:
+- `idx`: Section ID (e.g., "T0_0")
+- `nr`: Section number (0-indexed)
+- `fbid`: Feedback sensor ID for this section
+- `len`: Section length
+- `lcid`: Locomotive ID currently in section (empty string if free)
+
 ### Example Usage
 ```python
 # Get stage block
-stage = pr.model.get_stage("STAGE01")
+stage = pr.model.get_stage("SB_T0")
 
 # Open for entry
 stage.open()
@@ -812,6 +872,39 @@ stage.compress()
 
 # Release train
 stage.go()
+
+# Query sections
+print(f"Staging yard has {stage.get_section_count()} sections")
+print(f"Occupied: {len(stage.get_occupied_sections())}")
+print(f"Free: {len(stage.get_free_sections())}")
+
+# Get locomotives in staging
+locos = stage.get_locomotives_in_staging()
+print(f"Locomotives: {locos}")
+
+# Access individual sections
+for section in stage.sections:
+    if section.is_occupied():
+        print(f"Section {section.nr}: {section.lcid} (length: {section.len}mm)")
+    else:
+        print(f"Section {section.nr}: empty")
+
+# Get specific section
+section_0 = stage.get_section_by_number(0)
+if section_0:
+    print(f"First section ID: {section_0.idx}")
+    print(f"Feedback sensor: {section_0.fbid}")
+
+# Get locomotives by position
+front_loco = stage.get_front_locomotive()
+exit_loco = stage.get_exit_locomotive()
+print(f"Front locomotive (entered first): {front_loco}")
+print(f"Exit locomotive (ready to depart): {exit_loco}")
+
+# Depart the exit locomotive
+if exit_loco:
+    stage.expand()  # Activate train in exit section
+    stage.go()      # Give go permission
 ```
 
 ---

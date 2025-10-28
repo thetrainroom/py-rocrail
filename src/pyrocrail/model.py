@@ -14,7 +14,7 @@ from pyrocrail.objects.block import Block
 from pyrocrail.objects.car import Car
 from pyrocrail.objects.operator import Operator
 from pyrocrail.objects.schedule import Schedule
-from pyrocrail.objects.stage import Stage
+from pyrocrail.objects.stage import Stage, Section
 from pyrocrail.objects.text import Text
 from pyrocrail.objects.booster import Booster
 from pyrocrail.objects.variable import Variable
@@ -698,6 +698,28 @@ class Model:
                 set_attr(sb, "class_", value)
             else:
                 set_attr(sb, attr, value)
+
+        # Update sections if present in the update
+        section_elements = sb_xml.findall("section")
+        if section_elements:
+            # Update existing sections or add new ones
+            for section_el in section_elements:
+                section_id = section_el.attrib.get("id")
+                if not section_id:
+                    continue
+
+                # Find existing section
+                existing_section = sb.get_section(section_id)
+                if existing_section:
+                    # Update existing section attributes
+                    for attr, value in section_el.attrib.items():
+                        if attr == "id":
+                            continue  # Don't overwrite the id
+                        set_attr(existing_section, attr, value)
+                else:
+                    # Section doesn't exist, add it (shouldn't happen normally)
+                    new_section = Section(section_el)
+                    sb.sections.append(new_section)
 
         # Call change callback if registered
         if self.change_callback is not None:

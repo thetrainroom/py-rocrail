@@ -57,7 +57,8 @@ class Stage:
         self.entering = False  # Train entering
         self.allowchgdir = False  # Allow direction change
         self.reserved = False  # Reserved state
-        self.state = "open"  # open, closed, etc.
+        self.state = "open"  # Block state (open, closed)
+        self.exitstate = "open"  # Exit state (open, closed) - controls departure
         self.totallength = 0  # Total length of trains
         self.totalsections = 0  # Number of occupied sections
 
@@ -156,22 +157,42 @@ class Stage:
         cmd = f'<sb id="{self.idx}" cmd="expand"/>'
         self.communicator.send("sb", cmd)
 
-    # State control commands (similar to Block)
+    # State control commands
 
     def open(self):
-        """Open staging block for entry"""
-        cmd = f'<sb id="{self.idx}" cmd="open"/>'
+        """Open staging block - allow train entry
+
+        Opens the staging block state to allow trains to enter.
+        """
+        cmd = f'<sb id="{self.idx}" state="open"/>'
         self.communicator.send("sb", cmd)
-        self.state = "open"
 
     def close(self):
-        """Close staging block (no entry)"""
-        cmd = f'<sb id="{self.idx}" cmd="close"/>'
+        """Close staging block - prevent train entry
+
+        Closes the staging block state to prevent trains from entering.
+        """
+        cmd = f'<sb id="{self.idx}" state="closed"/>'
         self.communicator.send("sb", cmd)
-        self.state = "closed"
+
+    def open_exit(self):
+        """Open staging block exit - allow trains to depart
+
+        Opens the exit state to allow trains to leave the staging block.
+        """
+        cmd = f'<sb id="{self.idx}" exitstate="open"/>'
+        self.communicator.send("sb", cmd)
+
+    def close_exit(self):
+        """Close staging block exit - prevent trains from departing
+
+        Closes the exit state to prevent trains from leaving the staging block.
+        """
+        cmd = f'<sb id="{self.idx}" exitstate="closed"/>'
+        self.communicator.send("sb", cmd)
 
     def free(self):
-        """Free the staging block"""
+        """Free the staging block (unreserve)"""
         cmd = f'<sb id="{self.idx}" cmd="free"/>'
         self.communicator.send("sb", cmd)
         self.reserved = False

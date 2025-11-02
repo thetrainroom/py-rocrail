@@ -329,20 +329,40 @@ class Model:
         """
         self.communicator.send("model", f'<model cmd="remove"><{obj_type} id="{obj_id}"/></model>')
 
-    def modify_object(self, obj_type: str, obj_id: str, **attributes: str | int | None) -> None:
+    def modify_object(self, obj_type: str, obj_id_or_xml: str | ET.Element, **attributes: str | int | None) -> None:
         """Modify an existing object's properties
 
-        Args:
-            obj_type: Object type (lc, sw, fb, bk, sg, st, etc.)
-            obj_id: Object ID to modify
-            **attributes: Attributes to update
+        Supports two modes:
+        1. Simple attribute modification (pass obj_id + attributes)
+        2. Complex object modification (pass xml_element)
 
-        Example:
+        Args:
+            obj_type: Object type (lc, sw, fb, bk, sg, st, sc, etc.)
+            obj_id_or_xml: Either object ID (str) for simple modification,
+                          or complete XML element for complex objects with children
+            **attributes: Attributes to update (only used for simple modification)
+
+        Examples:
+            # Simple: Modify locomotive attributes
             model.modify_object("lc", "my_loco", V_max="120", mass="100")
+
+            # Complex: Modify schedule with entries (child elements)
+            sc_xml = ET.fromstring('''<sc id="Test" timeframe="1">
+                <scentry block="sb1" hour="10" minute="30"/>
+                <scentry block="cb3" hour="12" minute="0"/>
+            </sc>''')
+            model.modify_object("sc", sc_xml)
         """
-        # Convert None back to empty string for XML
-        attrs = " ".join([f'{key}="{value if value is not None else ""}"' for key, value in attributes.items()])
-        self.communicator.send("model", f'<model cmd="modify"><{obj_type} id="{obj_id}" {attrs}/></model>')
+        # Check if we received an XML element (complex object)
+        if isinstance(obj_id_or_xml, ET.Element):
+            xml_str = ET.tostring(obj_id_or_xml, encoding="unicode")
+            self.communicator.send("model", f'<model cmd="modify" controlcode="" slavecode="">{xml_str}</model>')
+        else:
+            # Simple attribute modification
+            obj_id = obj_id_or_xml
+            # Convert None back to empty string for XML
+            attrs = " ".join([f'{key}="{value if value is not None else ""}"' for key, value in attributes.items()])
+            self.communicator.send("model", f'<model cmd="modify"><{obj_type} id="{obj_id}" {attrs}/></model>')
 
     def merge_plan(self, plan_xml: ET.Element) -> None:
         """Merge plan updates from XML

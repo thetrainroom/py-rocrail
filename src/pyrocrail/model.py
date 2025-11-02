@@ -302,18 +302,35 @@ class Model:
         """
         self.communicator.send("model", f'<model cmd="lcprops" val="{loco_id}"/>')
 
-    def add_object(self, obj_type: str, xml_element: ET.Element) -> None:
+    def add_object(self, obj: Any) -> None:
         """Add a new object to the model dynamically
 
         Args:
-            obj_type: Object type (lc, sw, fb, bk, sg, st, etc.)
-            xml_element: XML element defining the object
+            obj: Object instance with to_xml() method (Feedback, Schedule, Locomotive, etc.)
+                 or ET.Element for backward compatibility
 
-        Example:
-            # Create a new locomotive
-            lc_xml = ET.fromstring('<lc id="new_loco" addr="3" V="0"/>')
-            model.add_object("lc", lc_xml)
+        Examples:
+            # Object-based API (recommended)
+            feedback = Feedback(...)
+            model.add_object(feedback)
+
+            schedule = Schedule(...)
+            schedule.entries.append(ScheduleEntry(...))
+            model.add_object(schedule)
+
+            # XML-based API (legacy, for advanced use)
+            fb_xml = ET.fromstring('<fb id="new_sensor" addr="10"/>')
+            model.add_object(fb_xml)
         """
+        # Convert object to XML if it has to_xml() method
+        xml_element: ET.Element
+        if hasattr(obj, "to_xml") and callable(obj.to_xml):
+            xml_element = obj.to_xml()  # type: ignore[attr-defined]
+        elif isinstance(obj, ET.Element):
+            xml_element = obj
+        else:
+            raise TypeError(f"Object must have to_xml() method or be an ET.Element, got {type(obj)}")
+
         xml_str = ET.tostring(xml_element, encoding="unicode")
         self.communicator.send("model", f'<model cmd="add">{xml_str}</model>')
 
@@ -329,20 +346,61 @@ class Model:
         """
         self.communicator.send("model", f'<model cmd="remove"><{obj_type} id="{obj_id}"/></model>')
 
-    def modify_object(self, obj_type: str, obj_id: str, **attributes: str | int | None) -> None:
+    def modify_object(self, obj_or_type: Any, obj_id_or_xml: str | ET.Element | None = None, **attributes: str | int | None) -> None:
         """Modify an existing object's properties
 
-        Args:
-            obj_type: Object type (lc, sw, fb, bk, sg, st, etc.)
-            obj_id: Object ID to modify
-            **attributes: Attributes to update
+        Supports three modes:
+        1. Object-based: Pass object instance with to_xml() method
+        2. Simple attributes: Pass obj_type + obj_id + keyword arguments
+        3. XML-based: Pass obj_type + XML element
 
-        Example:
-            model.modify_object("lc", "my_loco", V_max="120", mass="100")
+        Args:
+            obj_or_type: Either object instance (Feedback, Schedule, etc.) with to_xml() method,
+                        or object type string (lc, sw, fb, bk, sg, st, sc, etc.)
+            obj_id_or_xml: Object ID (str) for simple modification,
+                          or XML element for complex XML-based modification
+                          (ignored if first arg is object instance)
+            **attributes: Attributes to update (only used for simple modification)
+
+        Examples:
+            # Object-based API (recommended)
+            schedule = pr.model.get_schedule("Morning")
+            schedule.timeframe = 2
+            schedule.entries.append(ScheduleEntry(block="sb3", hour=15, minute=0))
+            pr.model.modify_object(schedule)
+
+            # Simple attribute modification
+            pr.model.modify_object("lc", "my_loco", V_max="120", mass="100")
+
+            # XML-based (legacy)
+            sc_xml = ET.fromstring('<sc id="Test" timeframe="1">...</sc>')
+            pr.model.modify_object("sc", sc_xml)
         """
-        # Convert None back to empty string for XML
-        attrs = " ".join([f'{key}="{value if value is not None else ""}"' for key, value in attributes.items()])
-        self.communicator.send("model", f'<model cmd="modify"><{obj_type} id="{obj_id}" {attrs}/></model>')
+        # Mode 1: Object instance with to_xml() method
+        if hasattr(obj_or_type, "to_xml") and callable(obj_or_type.to_xml):
+            xml_element: ET.Element = obj_or_type.to_xml()  # type: ignore[attr-defined]
+            xml_str = ET.tostring(xml_element, encoding="unicode")
+            self.communicator.send("model", f'<model cmd="modify" controlcode="" slavecode="">{xml_str}</model>')
+
+        # Mode 2 & 3: String type + (obj_id + attrs) or (XML element)
+        elif isinstance(obj_or_type, str):
+            obj_type = obj_or_type
+
+            # Check if we received an XML element
+            if isinstance(obj_id_or_xml, ET.Element):
+                xml_str = ET.tostring(obj_id_or_xml, encoding="unicode")
+                self.communicator.send("model", f'<model cmd="modify" controlcode="" slavecode="">{xml_str}</model>')
+            else:
+                # Simple attribute modification
+                obj_id = obj_id_or_xml
+                if obj_id is None:
+                    raise ValueError("obj_id is required for simple attribute modification")
+                # Convert None back to empty string for XML
+                attrs = " ".join([f'{key}="{value if value is not None else ""}"' for key, value in attributes.items()])
+                self.communicator.send("model", f'<model cmd="modify"><{obj_type} id="{obj_id}" {attrs}/></model>')
+
+        else:
+            raise TypeError(f"First argument must be object instance with to_xml() method or object type string, got {type(obj_or_type)}")
 
     def merge_plan(self, plan_xml: ET.Element) -> None:
         """Merge plan updates from XML

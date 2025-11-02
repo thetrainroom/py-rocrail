@@ -6,6 +6,106 @@ Complete reference for all PyRocrail object classes with links to official Rocra
 
 ---
 
+## Model Object Management
+
+PyRocrail provides universal methods for dynamically adding, modifying, and removing objects in the Rocrail model at runtime. These methods work for **all object types** including both simple objects (locomotives, switches, blocks) and complex objects with child elements (schedules, operators).
+
+### Adding Objects
+
+```python
+model.add_object(obj_type: str, xml_element: ET.Element) -> None
+```
+
+Add a new object to the model. Works for all object types, including complex objects with child elements.
+
+**Examples:**
+```python
+import xml.etree.ElementTree as ET
+
+# Simple object: Add a new feedback sensor
+fb_xml = ET.fromstring('<fb id="new_sensor" addr="10" iid="IB1"/>')
+pr.model.add_object("fb", fb_xml)
+
+# Complex object: Add a schedule with entries
+sc_xml = ET.fromstring('''<sc id="Morning" timeframe="1">
+    <scentry block="sb1" hour="8" minute="0"/>
+    <scentry block="cb3" hour="10" minute="30"/>
+    <scentry block="sb2" hour="12" minute="0"/>
+</sc>''')
+pr.model.add_object("sc", sc_xml)
+```
+
+### Modifying Objects
+
+```python
+model.modify_object(obj_type: str, obj_id_or_xml: str | ET.Element, **attributes) -> None
+```
+
+Modify an existing object. Supports two modes automatically:
+1. **Simple mode**: Pass object ID + keyword arguments for attribute changes
+2. **Complex mode**: Pass complete XML element for objects with child elements
+
+**Examples:**
+```python
+# Simple: Modify locomotive attributes
+pr.model.modify_object("lc", "BR01", V_max="120", mass="100")
+
+# Complex: Modify schedule entries
+sc_xml = ET.fromstring('''<sc id="Morning" timeframe="2">
+    <scentry block="sb1" hour="9" minute="0"/>
+    <scentry block="cb3" hour="11" minute="30"/>
+</sc>''')
+pr.model.modify_object("sc", sc_xml)
+```
+
+### Removing Objects
+
+```python
+model.remove_object(obj_type: str, obj_id: str) -> None
+```
+
+Remove an object from the model.
+
+**Examples:**
+```python
+# Remove a locomotive
+pr.model.remove_object("lc", "old_loco")
+
+# Remove a schedule
+pr.model.remove_object("sc", "unused_schedule")
+```
+
+### Object Type Codes
+
+| Type | Code | Description |
+|------|------|-------------|
+| Locomotive | `lc` | Locomotives and other rolling stock with decoders |
+| Block | `bk` | Track sections and blocks |
+| Switch | `sw` | Turnouts, points, and crossings |
+| Signal | `sg` | Signals and semaphores |
+| Route | `st` | Predefined paths through the layout |
+| Feedback | `fb` | Occupancy sensors and detectors |
+| Output | `co` | Accessory outputs (lights, sounds, etc.) |
+| Car | `car` | Rolling stock cars and wagons |
+| Operator | `operator` | Trains (locomotive + cars compositions) |
+| Schedule | `sc` | Timetables and schedules |
+| Stage | `sb` | Staging blocks/yards |
+| Text | `tx` | Text displays |
+| Booster | `bstr` | Power boosters |
+| Variable | `var` | Global variables |
+| Tour | `tour` | Demonstration tours |
+| Location | `location` | Flow control for hidden yards |
+| Weather | `weather` | Weather/atmospheric effects |
+
+### Notes
+
+- The model automatically updates when objects are added/modified/removed by the server
+- All object types support these methods - no special handling needed
+- Complex objects (schedules, operators) are handled transparently
+- Changes are immediately sent to Rocrail server and broadcast to all clients
+
+---
+
 ## Quick Reference
 
 | Object | Element | Description | Rocrail Docs |

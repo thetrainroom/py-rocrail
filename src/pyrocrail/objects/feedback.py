@@ -42,3 +42,28 @@ class Feedback:
         self.communicator.send("fb", xml)
         # Don't update state immediately - wait for server response
         # self.state = not self.state
+
+    def to_xml(self) -> ET.Element:
+        """Convert feedback object to XML element for add/modify operations
+
+        Returns:
+            XML element representing this feedback sensor
+        """
+        fb_elem = ET.Element("fb")
+
+        # Serialize all attributes except internal ones
+        for attr, value in self.__dict__.items():
+            # Skip internal attributes
+            if attr in ("communicator",):
+                continue
+
+            # Use 'id' instead of 'idx'
+            xml_attr = "id" if attr == "idx" else attr
+
+            # Convert Python types to XML strings
+            if isinstance(value, bool):
+                fb_elem.set(xml_attr, str(value).lower())
+            elif value is not None:
+                fb_elem.set(xml_attr, str(value))
+
+        return fb_elem

@@ -369,7 +369,7 @@ def test_add_complex_object_api(rocrail_server):
 
     # Create a new schedule with unique ID
     import xml.etree.ElementTree as ET
-    from pyrocrail.objects.schedule import Schedule, ScheduleEntry
+    from pyrocrail.objects.schedule import Schedule
 
     test_sc_id = f"test_schedule_{int(time.time())}"
     sc_xml = ET.fromstring(f'''<sc id="{test_sc_id}" timeframe="1" cycles="0" maxdelay="60">

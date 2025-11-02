@@ -9,7 +9,15 @@
       "Bash(docker exec:*)",
       "Bash(black:*)",
       "Bash(docker compose:*)",
-      "Bash(pyright:*)"
+      "Bash(pyright:*)",
+      "WebSearch",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd MCP server implementation plan for PyRocrail code assistant\n\nCreated comprehensive plan for MCP server to help developers write PyRocrail code:\n\n**Purpose**: Code assistant (not layout control) - help write automation scripts\n\n**8 MCP Tools Designed**:\n1. pyrocrail_api_lookup - Get documentation for objects/methods\n2. pyrocrail_list_methods - List available methods\n3. pyrocrail_generate_action - Generate action templates\n4. pyrocrail_generate_script - Generate complete scripts\n5. pyrocrail_find_example - Find relevant code examples\n6. pyrocrail_get_attributes - List object attributes\n7. pyrocrail_check_method - Validate method exists\n8. pyrocrail_best_practices - Get coding best practices\n\n**Implementation Plan**:\n- Week 1: Core infrastructure + OBJECTS.md parser\n- Week 2: Code generation templates\n- Week 3: Examples database + best practices\n- Week 4: Testing + documentation\n\n**Key Features**:\n- Parses OBJECTS.md for API documentation\n- Generates code from natural language descriptions\n- Provides examples from examples/ directory\n- Validates methods against official docs\n- NO layout control - purely development assistance\n\n**Use Case**: Developer asks Claude \"How do I control a switch?\" and gets\ninstant API docs, method signatures, and working code examples.\n\nTimeline: 4 weeks to production-ready MCP server\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(poetry run pytest:*)",
+      "WebFetch(domain:forum.rocrail.net)",
+      "Bash(rocrail_schedule_gen.txt)",
+      "Bash(tests/fixtures/pcap/rocrail_schedule_gen.txt)",
+      "Bash(pytest:*)"
     ],
     "deny": [],
     "ask": []

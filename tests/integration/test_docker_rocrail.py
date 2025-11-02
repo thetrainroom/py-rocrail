@@ -304,6 +304,124 @@ def test_model_queries(rocrail_server):
     time.sleep(0.5)
 
 
+def test_add_object_api(rocrail_server):
+    """Test object-based API for adding objects to the model
+
+    This test verifies that objects added via add_object() are actually
+    saved to the Rocrail server by:
+    1. Creating a new feedback sensor object
+    2. Adding it via model.add_object()
+    3. Clearing the local model cache
+    4. Re-requesting the plan from server
+    5. Verifying the object exists in the refreshed plan
+    """
+    pr = rocrail_server
+
+    # Create a new feedback sensor with unique ID
+    import xml.etree.ElementTree as ET
+    from pyrocrail.objects.feedback import Feedback
+
+    test_fb_id = f"test_fb_{int(time.time())}"
+    fb_xml = ET.fromstring(f'<fb id="{test_fb_id}" addr="99" iid="TEST" bus="0" state="false"/>')
+    new_fb = Feedback(fb_xml, pr.com)
+
+    # Add the object via object-based API
+    pr.model.add_object(new_fb)
+    time.sleep(1)  # Wait for server to process
+
+    # Clear the local domain to force refresh from server
+    pr.model._fb_domain.clear()
+
+    # Re-request the plan from server
+    pr.model.plan_recv = False
+    pr.model.communicator.send("model", '<model cmd="plan"/>')
+
+    # Wait for plan to be received
+    timeout = 10
+    start = time.time()
+    while not pr.model.plan_recv:
+        time.sleep(0.1)
+        if time.time() - start > timeout:
+            pytest.fail("Timeout waiting for plan refresh")
+
+    # Verify the object exists in the refreshed plan
+    assert test_fb_id in pr.model._fb_domain, f"Feedback sensor '{test_fb_id}' should exist in refreshed plan"
+
+    retrieved_fb = pr.model.get_fb(test_fb_id)
+    assert retrieved_fb.idx == test_fb_id
+    assert str(retrieved_fb.addr) == "99", f"Address should be 99, got {retrieved_fb.addr}"
+
+    print(f"[+] Object-based API test passed: {test_fb_id} successfully added and retrieved")
+
+
+def test_add_complex_object_api(rocrail_server):
+    """Test object-based API for adding complex objects with children
+
+    This test verifies that complex objects (with child elements) can be
+    added via add_object() by:
+    1. Creating a new schedule with multiple entries
+    2. Adding it via model.add_object()
+    3. Clearing the local model cache
+    4. Re-requesting the plan from server
+    5. Verifying the schedule and all entries exist
+    """
+    pr = rocrail_server
+
+    # Create a new schedule with unique ID
+    import xml.etree.ElementTree as ET
+    from pyrocrail.objects.schedule import Schedule, ScheduleEntry
+
+    test_sc_id = f"test_schedule_{int(time.time())}"
+    sc_xml = ET.fromstring(f'''<sc id="{test_sc_id}" timeframe="1" cycles="0" maxdelay="60">
+        <scentry block="sb1" hour="8" minute="0"/>
+        <scentry block="bk1" hour="10" minute="30"/>
+        <scentry block="sb2" hour="12" minute="0"/>
+    </sc>''')
+    new_schedule = Schedule(sc_xml, pr.com)
+
+    # Verify the schedule has entries
+    assert len(new_schedule.entries) == 3, "Schedule should have 3 entries"
+    assert new_schedule.entries[0].block == "sb1"
+    assert new_schedule.entries[1].block == "bk1"
+    assert new_schedule.entries[2].block == "sb2"
+
+    # Add the object via object-based API
+    pr.model.add_object(new_schedule)
+    time.sleep(1)  # Wait for server to process
+
+    # Clear the local domain to force refresh from server
+    pr.model._sc_domain.clear()
+
+    # Re-request the plan from server
+    pr.model.plan_recv = False
+    pr.model.communicator.send("model", '<model cmd="plan"/>')
+
+    # Wait for plan to be received
+    timeout = 10
+    start = time.time()
+    while not pr.model.plan_recv:
+        time.sleep(0.1)
+        if time.time() - start > timeout:
+            pytest.fail("Timeout waiting for plan refresh")
+
+    # Verify the schedule exists in the refreshed plan
+    assert test_sc_id in pr.model._sc_domain, f"Schedule '{test_sc_id}' should exist in refreshed plan"
+
+    retrieved_schedule = pr.model.get_schedule(test_sc_id)
+    assert retrieved_schedule.idx == test_sc_id
+    assert retrieved_schedule.timeframe == 1
+
+    # Verify all entries were saved
+    assert len(retrieved_schedule.entries) == 3, f"Schedule should have 3 entries, got {len(retrieved_schedule.entries)}"
+    assert retrieved_schedule.entries[0].block == "sb1", "First entry should be sb1"
+    assert retrieved_schedule.entries[1].block == "bk1", "Second entry should be bk1"
+    assert retrieved_schedule.entries[2].block == "sb2", "Third entry should be sb2"
+    assert retrieved_schedule.entries[0].hour == 8
+    assert retrieved_schedule.entries[1].minute == 30
+
+    print(f"[+] Complex object API test passed: {test_sc_id} with 3 entries successfully added and retrieved")
+
+
 if __name__ == "__main__":
     # Allow running tests directly
     pytest.main([__file__, "-v"])

@@ -84,3 +84,42 @@ class Schedule:
                     departspeed=int(child.attrib.get("departspeed", "0")),
                 )
                 self.entries.append(entry)
+
+    def to_xml(self) -> ET.Element:
+        """Convert schedule object to XML element for add/modify operations
+
+        Returns:
+            XML element representing this schedule with all entries
+        """
+        sc_elem = ET.Element("sc")
+
+        # Serialize schedule attributes
+        for attr, value in self.__dict__.items():
+            # Skip internal attributes and collections
+            if attr in ("communicator", "entries"):
+                continue
+
+            # Handle 'class_' -> 'class' conversion
+            xml_attr = "class" if attr == "class_" else attr
+
+            # Use 'id' instead of 'idx'
+            if attr == "idx":
+                xml_attr = "id"
+
+            # Convert Python types to XML strings
+            if isinstance(value, bool):
+                sc_elem.set(xml_attr, str(value).lower())
+            elif value is not None:
+                sc_elem.set(xml_attr, str(value))
+
+        # Add schedule entry child elements
+        for entry in self.entries:
+            entry_elem = ET.SubElement(sc_elem, "scentry")
+            for field, value in entry.__dict__.items():
+                # Convert Python types to XML strings
+                if isinstance(value, bool):
+                    entry_elem.set(field, str(value).lower())
+                elif value is not None:
+                    entry_elem.set(field, str(value))
+
+        return sc_elem

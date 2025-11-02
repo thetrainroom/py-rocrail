@@ -16,7 +16,7 @@ reportUnknownParameterType = false
 
 [tool.ruff]
 exclude = []
-line-length = 5000 # Enforce with black formatter instead of ruff
+line-length = 320 # Maximum allowed by ruff (black enforces 180)
 target-version = "py310"
 
 [tool.ruff.lint]

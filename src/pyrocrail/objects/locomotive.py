@@ -159,3 +159,16 @@ class Locomotive:
         """Release assigned train/operator from locomotive"""
         cmd = f'<lc id="{self.idx}" cmd="releasetrain"/>'
         self.communicator.send("lc", cmd)
+
+    def gotoblock(self, block_id: str) -> None:
+        """Set destination block for locomotive
+
+        Args:
+            block_id: Target block ID, variable reference (@varN), or text field reference ($txN)
+
+        Note:
+            Sets the target block for the locomotive. The locomotive will travel to this block
+            when in automatic mode. Supports variable references (@var6) and text field references ($tx1).
+        """
+        cmd = f'<lc id="{self.idx}" cmd="gotoblock" blockid="{block_id}"/>'
+        self.communicator.send("lc", cmd)

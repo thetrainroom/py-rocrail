@@ -181,6 +181,11 @@ loco.dispatch() -> None
 ```
 Dispatch for automatic control (cmd="dispatch").
 
+```python
+loco.gotoblock(block_id: str) -> None
+```
+Set destination block for locomotive (cmd="gotoblock"). The locomotive will travel to the specified block when in automatic mode. Supports variable references (`@var6`) and text field references (`$tx1`).
+
 #### Schedule Management
 ```python
 loco.use_schedule(schedule_id: str) -> None

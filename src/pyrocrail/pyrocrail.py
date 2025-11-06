@@ -328,19 +328,31 @@ class PyRocrail:
         """Check if a block is occupied"""
         try:
             bk = self.model.get_bk(block_id)
-            return getattr(bk, "occ", False)
+            return bk.is_occupied()
         except (KeyError, AttributeError):
             return False
 
     def _is_free(self, block_id: str) -> bool:
-        """Check if a block is free (not occupied)"""
-        return not self._is_occupied(block_id)
+        """Check if a block is free (not occupied, not reserved, and state is free)"""
+        try:
+            bk = self.model.get_bk(block_id)
+            return bk.is_free()
+        except (KeyError, AttributeError):
+            return False
 
     def _is_reserved(self, block_id: str) -> bool:
         """Check if a block is reserved"""
         try:
             bk = self.model.get_bk(block_id)
-            return getattr(bk, "reserved", False)
+            return bk.is_reserved()
+        except (KeyError, AttributeError):
+            return False
+
+    def _is_closed(self, block_id: str) -> bool:
+        """Check if a block is closed"""
+        try:
+            bk = self.model.get_bk(block_id)
+            return bk.is_closed()
         except (KeyError, AttributeError):
             return False
 

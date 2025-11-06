@@ -109,7 +109,7 @@ def main():
 
             # Enable power and automode
             print(f"\n{'=' * 80}")
-            print(f"ENABLING AUTOMODE")
+            print("ENABLING AUTOMODE")
             print(f"{'=' * 80}")
             print("Turning power ON...")
             pr.power_on()
@@ -121,7 +121,7 @@ def main():
             print("✓ Automode enabled!")
 
             print(f"\n{'=' * 80}")
-            print(f"SENDING GOTOBLOCK COMMAND")
+            print("SENDING GOTOBLOCK COMMAND")
             print(f"{'=' * 80}")
             print(f"Locomotive: {loco_id}")
             print(f"Current block: {current_block}")
@@ -161,8 +161,8 @@ def main():
                     tgt_block = blocks[target_block]
                     tgt_reserved = getattr(tgt_block, "reserved", False)
                     tgt_occ = getattr(tgt_block, "occ", False)
-                    tgt_state = f"[R]" if tgt_reserved else "[F]"
-                    tgt_state += f"[O]" if tgt_occ else ""
+                    tgt_state = "[R]" if tgt_reserved else "[F]"
+                    tgt_state += "[O]" if tgt_occ else ""
                 else:
                     tgt_state = "[?]"
 
@@ -197,7 +197,7 @@ def main():
             variables = pr.model.get_variables() if hasattr(pr.model, 'get_variables') else {}
             if variables:
                 var_id = list(variables.keys())[0]
-                print(f"\nBonus test: Variable reference")
+                print("\nBonus test: Variable reference")
                 print(f"Command: loco.gotoblock('@{var_id}')")
                 loco.gotoblock(f"@{var_id}")
                 print("✓ Variable reference command sent!")

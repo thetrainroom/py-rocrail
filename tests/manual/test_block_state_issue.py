@@ -37,7 +37,7 @@ def main():
             pr_reserved = pr._is_reserved(block_id)
             pr_closed = pr._is_closed(block_id)
 
-            print(f"  PyRocrail methods:")
+            print("  PyRocrail methods:")
             print(f"    closed={pr_closed} free={pr_free} reserved={pr_reserved} occupied={pr_occupied}")
 
             # Block object methods
@@ -46,11 +46,11 @@ def main():
             bk_reserved = bk.is_reserved()
             bk_occupied = bk.is_occupied()
 
-            print(f"  Block methods:")
+            print("  Block methods:")
             print(f"    closed={bk_closed} free={bk_free} reserved={bk_reserved} occupied={bk_occupied}")
 
             # Show raw attributes
-            print(f"  Raw attributes:")
+            print("  Raw attributes:")
             print(f"    state={getattr(bk, 'state', 'unknown')} occ={getattr(bk, 'occ', 'unknown')} reserved={getattr(bk, 'reserved', 'unknown')}")
 
             # Check for discrepancies
@@ -67,7 +67,7 @@ def main():
             if discrepancies:
                 print(f"  ❌ DISCREPANCIES: {', '.join(discrepancies)}")
             else:
-                print(f"  ✓ All methods match!")
+                print("  ✓ All methods match!")
 
         print("\n" + "=" * 80)
         print("SUMMARY")

@@ -1,6 +1,20 @@
 import xml.etree.ElementTree as ET
+from enum import Enum
 from pyrocrail.objects import set_attr
 from pyrocrail.communicator import Communicator
+
+
+class SwitchPosition(Enum):
+    """Switch position enum for type-safe switch state management"""
+
+    STRAIGHT = "straight"
+    TURNOUT = "turnout"
+    LEFT = "left"  # For 3-way switches
+    RIGHT = "right"  # For 3-way switches
+
+    def __str__(self) -> str:
+        """Return string value for XML serialization"""
+        return self.value
 
 
 class Switch:
@@ -9,7 +23,7 @@ class Switch:
         self.communicator = com
 
         # State attributes
-        self.state = "straight"  # Current position: straight, turnout
+        self.state = SwitchPosition.STRAIGHT  # Current position enum
         self.switched = False  # Switch state
         self.cmd = ""  # Last command
 
@@ -30,20 +44,28 @@ class Switch:
     def build(self, sw_xml: ET.Element):
         self.idx = sw_xml.attrib["id"]
         for attr, value in sw_xml.attrib.items():
-            set_attr(self, attr, value)
+            # Convert state string to enum
+            if attr == "state":
+                try:
+                    self.state = SwitchPosition(value)
+                except ValueError:
+                    # Fallback for unknown states
+                    self.state = SwitchPosition.STRAIGHT
+            else:
+                set_attr(self, attr, value)
 
     def straight(self):
         """Set switch to straight position"""
         cmd = f'<sw id="{self.idx}" cmd="straight"/>'
         self.communicator.send("sw", cmd)
-        self.state = "straight"
+        self.state = SwitchPosition.STRAIGHT
         self.switched = False
 
     def turnout(self):
         """Set switch to turnout position"""
         cmd = f'<sw id="{self.idx}" cmd="turnout"/>'
         self.communicator.send("sw", cmd)
-        self.state = "turnout"
+        self.state = SwitchPosition.TURNOUT
         self.switched = True
 
     def flip(self):
@@ -51,17 +73,39 @@ class Switch:
         cmd = f'<sw id="{self.idx}" cmd="flip"/>'
         self.communicator.send("sw", cmd)
         self.switched = not self.switched
-        self.state = "turnout" if self.switched else "straight"
+        self.state = SwitchPosition.TURNOUT if self.switched else SwitchPosition.STRAIGHT
 
-    def set_state(self, state: str):
-        """Set switch to specific state"""
-        if state.lower() in ["straight", "0", "green"]:
-            self.straight()
-        elif state.lower() in ["turnout", "1", "red"]:
-            self.turnout()
+    def set_state(self, state):
+        """Set switch to specific state
+
+        Args:
+            state: Can be str, int, or SwitchPosition enum
+        """
+        if isinstance(state, SwitchPosition):
+            # Direct enum usage
+            state_method_map = {
+                SwitchPosition.STRAIGHT: self.straight,
+                SwitchPosition.TURNOUT: self.turnout,
+                SwitchPosition.LEFT: self.left,
+                SwitchPosition.RIGHT: self.right,
+            }
+            if state in state_method_map:
+                state_method_map[state]()
+            else:
+                raise ValueError(f"Invalid switch state: {state}")
+        elif isinstance(state, str):
+            if state.lower() in ["straight", "0", "green"]:
+                self.straight()
+            elif state.lower() in ["turnout", "1", "red"]:
+                self.turnout()
+            elif state.lower() == "left":
+                self.left()
+            elif state.lower() == "right":
+                self.right()
+            else:
+                raise ValueError(f"Invalid switch state: {state}")
         else:
-            # TODO: Handle invalid state
-            raise ValueError(f"Invalid switch state: {state}")
+            raise ValueError(f"Invalid switch state type: {type(state)}")
 
     def lock(self):
         """Lock switch in current position"""
@@ -79,13 +123,13 @@ class Switch:
         """Set switch to left position (for 3-way or double-slip switches)"""
         cmd = f'<sw id="{self.idx}" cmd="left"/>'
         self.communicator.send("sw", cmd)
-        self.state = "left"
+        self.state = SwitchPosition.LEFT
 
     def right(self):
         """Set switch to right position (for 3-way or double-slip switches)"""
         cmd = f'<sw id="{self.idx}" cmd="right"/>'
         self.communicator.send("sw", cmd)
-        self.state = "right"
+        self.state = SwitchPosition.RIGHT
 
 
 class ThreeWaySwitch(Switch):

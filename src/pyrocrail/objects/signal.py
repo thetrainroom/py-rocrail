@@ -1,6 +1,20 @@
 import xml.etree.ElementTree as ET
+from enum import Enum
 from pyrocrail.objects import set_attr
 from pyrocrail.communicator import Communicator
+
+
+class SignalAspect(Enum):
+    """Signal aspect/color enum for type-safe signal state management"""
+
+    RED = "red"  # Stop
+    GREEN = "green"  # Go/Clear
+    YELLOW = "yellow"  # Caution/Approach
+    WHITE = "white"  # Shunt/Restricted speed
+
+    def __str__(self) -> str:
+        """Return string value for XML serialization"""
+        return self.value
 
 
 class Signal:
@@ -9,7 +23,7 @@ class Signal:
         self.communicator = com
 
         # State attributes
-        self.state = "red"  # Current aspect: red, green, yellow, white
+        self.state = SignalAspect.RED  # Current aspect enum
         self.aspect = 0  # Numeric aspect value
         self.cmd = ""  # Last command
 
@@ -27,44 +41,64 @@ class Signal:
     def build(self, sg_xml: ET.Element):
         self.idx = sg_xml.attrib["id"]
         for attr, value in sg_xml.attrib.items():
-            set_attr(self, attr, value)
+            # Convert state string to enum
+            if attr == "state":
+                try:
+                    self.state = SignalAspect(value)
+                except ValueError:
+                    # Fallback for unknown states
+                    self.state = SignalAspect.RED
+            else:
+                set_attr(self, attr, value)
 
     def red(self):
         """Set signal to red (stop)"""
         cmd = f'<sg id="{self.idx}" cmd="red"/>'
         self.communicator.send("sg", cmd)
-        self.state = "red"
+        self.state = SignalAspect.RED
         self.aspect = 0
 
     def green(self):
         """Set signal to green (go)"""
         cmd = f'<sg id="{self.idx}" cmd="green"/>'
         self.communicator.send("sg", cmd)
-        self.state = "green"
+        self.state = SignalAspect.GREEN
         self.aspect = 1
 
     def yellow(self):
         """Set signal to yellow (caution)"""
         cmd = f'<sg id="{self.idx}" cmd="yellow"/>'
         self.communicator.send("sg", cmd)
-        self.state = "yellow"
+        self.state = SignalAspect.YELLOW
         self.aspect = 2
 
     def white(self):
         """Set signal to white (shunt)"""
         cmd = f'<sg id="{self.idx}" cmd="white"/>'
         self.communicator.send("sg", cmd)
-        self.state = "white"
+        self.state = SignalAspect.WHITE
         self.aspect = 3
 
     def set_aspect(self, aspect):
-        """Set signal to specific aspect"""
-        if isinstance(aspect, int):
+        """Set signal to specific aspect
+
+        Args:
+            aspect: Can be int (0-3), string ("red", "green", etc.), or SignalAspect enum
+        """
+        if isinstance(aspect, SignalAspect):
+            # Direct enum usage
+            aspect_method_map = {
+                SignalAspect.RED: self.red,
+                SignalAspect.GREEN: self.green,
+                SignalAspect.YELLOW: self.yellow,
+                SignalAspect.WHITE: self.white,
+            }
+            aspect_method_map[aspect]()
+        elif isinstance(aspect, int):
             aspect_map = {0: "red", 1: "green", 2: "yellow", 3: "white"}
             if aspect in aspect_map:
                 getattr(self, aspect_map[aspect])()
             else:
-                # TODO: Handle invalid aspect number
                 raise ValueError(f"Invalid aspect number: {aspect}")
         elif isinstance(aspect, str):
             aspect_lower = aspect.lower()
@@ -77,16 +111,15 @@ class Signal:
             elif aspect_lower in ["white", "shunt"]:
                 self.white()
             else:
-                # TODO: Handle invalid aspect name
                 raise ValueError(f"Invalid aspect name: {aspect}")
 
     def next_aspect(self):
         """Cycle to next aspect"""
-        # TODO: Verify aspect cycling behavior
-        current_aspects = ["red", "green", "yellow", "white"]
+        # Map enum to index
+        aspect_order = [SignalAspect.RED, SignalAspect.GREEN, SignalAspect.YELLOW, SignalAspect.WHITE]
         try:
-            current_index = current_aspects.index(self.state)
-            next_index = (current_index + 1) % min(self.aspects, len(current_aspects))
+            current_index = aspect_order.index(self.state)
+            next_index = (current_index + 1) % min(self.aspects, len(aspect_order))
             self.set_aspect(next_index)
         except ValueError:
             self.red()  # Default to red if current state unknown

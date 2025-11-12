@@ -5,9 +5,9 @@ from .communicator import Communicator
 from .objects.feedback import Feedback
 from .objects.output import Output, Color
 from .objects.locomotive import Locomotive
-from .objects.switch import Switch, ThreeWaySwitch
-from .objects.signal import Signal
-from .objects.route import Route
+from .objects.switch import Switch, ThreeWaySwitch, SwitchPosition
+from .objects.signal import Signal, SignalAspect
+from .objects.route import Route, RouteState, SwitchCmd, OutputCmd
 from .objects.block import Block, BlockState
 from .objects.action import ActionCtrl
 
@@ -28,9 +28,14 @@ __all__ = [
     "Color",
     "Locomotive",
     "Switch",
+    "SwitchPosition",
     "ThreeWaySwitch",
     "Signal",
+    "SignalAspect",
     "Route",
+    "RouteState",
+    "SwitchCmd",
+    "OutputCmd",
     "Block",
     "BlockState",
     "ActionCtrl",

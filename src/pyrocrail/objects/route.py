@@ -1,7 +1,45 @@
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
+from enum import Enum
 from pyrocrail.objects import set_attr
 from pyrocrail.communicator import Communicator
+
+
+class RouteState(Enum):
+    """Route state enum for type-safe route state management"""
+
+    FREE = "free"  # Route available
+    SET = "set"  # Route is set/active
+    LOCKED = "locked"  # Route is locked
+
+    def __str__(self) -> str:
+        """Return string value for XML serialization"""
+        return self.value
+
+
+class SwitchCmd(Enum):
+    """Switch command enum for route switch commands"""
+
+    STRAIGHT = "straight"
+    TURNOUT = "turnout"
+    LEFT = "left"  # For 3-way switches
+    RIGHT = "right"  # For 3-way switches
+
+    def __str__(self) -> str:
+        """Return string value for XML serialization"""
+        return self.value
+
+
+class OutputCmd(Enum):
+    """Output command enum for route output commands"""
+
+    ON = "on"
+    OFF = "off"
+    FLIP = "flip"  # Toggle
+
+    def __str__(self) -> str:
+        """Return string value for XML serialization"""
+        return self.value
 
 
 @dataclass
@@ -9,7 +47,7 @@ class SwitchCommand:
     """Switch command in route"""
 
     id: str = ""
-    cmd: str = "straight"  # straight, turnout, left, right
+    cmd: SwitchCmd = SwitchCmd.STRAIGHT
     lock: bool = False
 
 
@@ -18,7 +56,7 @@ class OutputCommand:
     """Output command in route"""
 
     id: str = ""
-    cmd: str = "on"  # on, off, flip
+    cmd: OutputCmd = OutputCmd.ON
     value: int = 0
 
 
@@ -36,7 +74,7 @@ class Route:
         self.communicator = com
 
         # State attributes
-        self.state = "free"  # Route state: free, locked, set
+        self.state = RouteState.FREE  # Route state enum
         self.cmd = ""  # Last command
 
         # Configuration attributes
@@ -59,17 +97,35 @@ class Route:
     def build(self, st_xml: ET.Element):
         self.idx = st_xml.attrib["id"]
         for attr, value in st_xml.attrib.items():
-            set_attr(self, attr, value)
+            # Convert state string to enum
+            if attr == "state":
+                try:
+                    self.state = RouteState(value)
+                except ValueError:
+                    # Fallback for unknown states
+                    self.state = RouteState.FREE
+            else:
+                set_attr(self, attr, value)
 
         # Parse child elements for switches, outputs, permissions
         for child in st_xml:
             if child.tag == "swcmd":
-                # Parse switch command
-                sw_cmd = SwitchCommand(id=child.attrib.get("id", ""), cmd=child.attrib.get("cmd", "straight"), lock=child.attrib.get("lock", "false").lower() == "true")
+                # Parse switch command - convert string to enum
+                cmd_str = child.attrib.get("cmd", "straight")
+                try:
+                    cmd_enum = SwitchCmd(cmd_str)
+                except ValueError:
+                    cmd_enum = SwitchCmd.STRAIGHT
+                sw_cmd = SwitchCommand(id=child.attrib.get("id", ""), cmd=cmd_enum, lock=child.attrib.get("lock", "false").lower() == "true")
                 self.switches.append(sw_cmd)
             elif child.tag == "outcmd":
-                # Parse output command
-                out_cmd = OutputCommand(id=child.attrib.get("id", ""), cmd=child.attrib.get("cmd", "on"), value=int(child.attrib.get("value", "0")))
+                # Parse output command - convert string to enum
+                cmd_str = child.attrib.get("cmd", "on")
+                try:
+                    cmd_enum = OutputCmd(cmd_str)
+                except ValueError:
+                    cmd_enum = OutputCmd.ON
+                out_cmd = OutputCommand(id=child.attrib.get("id", ""), cmd=cmd_enum, value=int(child.attrib.get("value", "0")))
                 self.outputs.append(out_cmd)
             elif child.tag == "permissionlist":
                 # Parse permissions
@@ -82,7 +138,7 @@ class Route:
         """Set/activate the route"""
         cmd = f'<st id="{self.idx}" cmd="set"/>'
         self.communicator.send("st", cmd)
-        self.state = "set"
+        self.state = RouteState.SET
 
     def go(self):
         """Alias for set() - activate the route"""
@@ -92,19 +148,19 @@ class Route:
         """Lock the route"""
         cmd = f'<st id="{self.idx}" cmd="lock"/>'
         self.communicator.send("st", cmd)
-        self.state = "locked"
+        self.state = RouteState.LOCKED
 
     def unlock(self):
         """Unlock the route"""
         cmd = f'<st id="{self.idx}" cmd="unlock"/>'
         self.communicator.send("st", cmd)
-        self.state = "free"
+        self.state = RouteState.FREE
 
     def free(self):
         """Free the route"""
         cmd = f'<st id="{self.idx}" cmd="free"/>'
         self.communicator.send("st", cmd)
-        self.state = "free"
+        self.state = RouteState.FREE
 
     def test(self):
         """Test the route without activating"""
@@ -114,12 +170,12 @@ class Route:
 
     def is_free(self) -> bool:
         """Check if route is free"""
-        return self.state == "free"
+        return self.state == RouteState.FREE
 
     def is_locked(self) -> bool:
         """Check if route is locked"""
-        return self.state == "locked"
+        return self.state == RouteState.LOCKED
 
     def is_set(self) -> bool:
         """Check if route is set/active"""
-        return self.state == "set"
+        return self.state == RouteState.SET

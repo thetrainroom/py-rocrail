@@ -8,7 +8,7 @@ from .objects.locomotive import Locomotive
 from .objects.switch import Switch, ThreeWaySwitch
 from .objects.signal import Signal
 from .objects.route import Route
-from .objects.block import Block
+from .objects.block import Block, BlockState
 from .objects.action import ActionCtrl
 
 # Create single logger for entire library
@@ -32,6 +32,7 @@ __all__ = [
     "Signal",
     "Route",
     "Block",
+    "BlockState",
     "ActionCtrl",
     "logger",  # Export logger for users who want to configure it
 ]

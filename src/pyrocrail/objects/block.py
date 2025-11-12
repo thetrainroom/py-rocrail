@@ -1,6 +1,20 @@
 import xml.etree.ElementTree as ET
+from enum import Enum
 from pyrocrail.objects import set_attr
 from pyrocrail.communicator import Communicator
+
+
+class BlockState(Enum):
+    """Block state enum for type-safe state management"""
+
+    OPEN = "open"
+    CLOSED = "closed"
+    FREE = "free"
+    RESERVED = "reserved"
+
+    def __str__(self) -> str:
+        """Return string value for XML serialization"""
+        return self.value
 
 
 class Block:
@@ -9,7 +23,7 @@ class Block:
         self.communicator = com
 
         # State attributes
-        self.state = "free"  # Block state: free, occupied, reserved, closed
+        self.state = BlockState.FREE  # Block state enum
         self.occ = False  # Occupied flag
         self.reserved = False  # Reserved flag
         self.locid = ""  # Locomotive ID currently in block
@@ -33,7 +47,15 @@ class Block:
     def build(self, bk_xml: ET.Element):
         self.idx = bk_xml.attrib["id"]
         for attr, value in bk_xml.attrib.items():
-            set_attr(self, attr, value)
+            # Convert state string to enum
+            if attr == "state":
+                try:
+                    self.state = BlockState(value)
+                except ValueError:
+                    # Fallback for unknown states
+                    self.state = BlockState.FREE
+            else:
+                set_attr(self, attr, value)
 
     def reserve(self, loco_id: str = ""):
         """Reserve the block for a locomotive"""
@@ -44,7 +66,7 @@ class Block:
             cmd = f'<bk id="{self.idx}" cmd="reserve"/>'
         self.communicator.send("bk", cmd)
         self.reserved = True
-        self.state = "reserved"
+        self.state = BlockState.RESERVED
 
     def free(self):
         """Free the block"""
@@ -53,7 +75,7 @@ class Block:
         self.reserved = False
         self.occ = False
         self.locid = ""
-        self.state = "free"
+        self.state = BlockState.FREE
 
     def stop(self):
         """Stop locomotive in block"""
@@ -62,18 +84,18 @@ class Block:
 
     def close(self):
         """Close the block (no entry allowed)"""
-        cmd = f'<bk id="{self.idx}" state="closed"/>'
+        cmd = f'<bk id="{self.idx}" state="{BlockState.CLOSED.value}"/>'
         self.communicator.send("bk", cmd)
         # Don't update state immediately - wait for server response
-        # self.state = "closed"
+        # self.state = BlockState.CLOSED
 
     def open(self):
         """Open the block (allow entry)"""
-        cmd = f'<bk id="{self.idx}" state="open"/>'
+        cmd = f'<bk id="{self.idx}" state="{BlockState.OPEN.value}"/>'
         self.communicator.send("bk", cmd)
         # Don't update state immediately - wait for server response
         # if not self.occ and not self.reserved:
-        #     self.state = "free"
+        #     self.state = BlockState.FREE
 
     def accept_ident(self):
         """Accept locomotive identification"""
@@ -83,7 +105,7 @@ class Block:
 
     def is_free(self) -> bool:
         """Check if block is free (not occupied, not reserved, not closed)"""
-        return not self.is_occupied() and not self.reserved and self.state != "closed"
+        return not self.is_occupied() and not self.reserved and self.state != BlockState.CLOSED
 
     def is_occupied(self) -> bool:
         """Check if block is occupied
@@ -100,7 +122,7 @@ class Block:
 
     def is_closed(self) -> bool:
         """Check if block is closed"""
-        return self.state == "closed"
+        return self.state == BlockState.CLOSED
 
     def get_locomotive(self) -> str:
         """Get ID of locomotive in block"""

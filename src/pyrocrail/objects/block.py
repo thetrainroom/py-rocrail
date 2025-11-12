@@ -82,12 +82,17 @@ class Block:
         self.communicator.send("bk", cmd)
 
     def is_free(self) -> bool:
-        """Check if block is free"""
-        return self.state == "free" and not self.occ and not self.reserved
+        """Check if block is free (not occupied, not reserved, not closed)"""
+        return not self.is_occupied() and not self.reserved and self.state != "closed"
 
     def is_occupied(self) -> bool:
-        """Check if block is occupied"""
-        return self.occ
+        """Check if block is occupied
+
+        A block is considered occupied if either:
+        - The occ (occupied) flag is True
+        - OR a locomotive ID (locid) is assigned to the block
+        """
+        return self.occ or bool(self.locid)
 
     def is_reserved(self) -> bool:
         """Check if block is reserved"""

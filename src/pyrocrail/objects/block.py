@@ -67,6 +67,15 @@ class Block:
         self.communicator.send("bk", cmd)
         self.reserved = True
         self.state = BlockState.RESERVED
+        
+    def free_override(self):
+        """Force Free the block"""
+        cmd = f'<bk id="{self.idx}" cmd="free" locid="" override="1"/>'
+        self.communicator.send("bk", cmd)
+        self.reserved = False
+        self.occ = False
+        self.locid = ""
+        self.state = BlockState.FREE
 
     def free(self):
         """Free the block"""

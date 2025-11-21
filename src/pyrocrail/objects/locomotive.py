@@ -26,6 +26,7 @@ class Locomotive:
         self.V_mid = 50  # Mid speed
         self.mass = 0  # Mass for physics
         self.length = 0  # Length in mm
+        self.home = ""
 
         self.build(lc_xml)
 

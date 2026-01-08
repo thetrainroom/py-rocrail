@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-import sys, os, time
+# ruff: noqa: N806
+
+import sys
+import os
+import time
 import msvcrt  # Windows only
 
 print("🔍 DEBUG: Starting Locos_HomeAll.py")
@@ -9,9 +13,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 print("📂 Script location:", BASE_DIR)
 
 # Path to py-rocrail/src
-PY_ROCRAIL_SRC = os.path.abspath(
-    os.path.join(BASE_DIR, "..", "py-rocrail", "src")
-)
+PY_ROCRAIL_SRC = os.path.abspath(os.path.join(BASE_DIR, "..", "py-rocrail", "src"))
 print("📦 Expected py-rocrail/src path:", PY_ROCRAIL_SRC)
 
 # Validate directory structure
@@ -41,6 +43,7 @@ for p in sys.path:
 # Try importing
 try:
     from pyrocrail import PyRocrail
+
     print("\n✅ SUCCESS: PyRocrail imported correctly\n")
 except ImportError as e:
     print("\n❌ FAILED to import PyRocrail")
@@ -59,26 +62,29 @@ CYAN = "\033[96m"
 RESET = "\033[0m"
 BOLD = "\033[1m"
 
+
 # ----------------------------
 # Terminal helpers
 # ----------------------------
 def clear_screen():
     print("\033[2J\033[H", end="")  # clear + move cursor home
 
+
 def color(text, code):
     return f"{code}{text}{RESET}"
+
 
 # ----------------------------
 # Utility functions
 # ----------------------------
 def kb_hit():
     """Return pressed key if available, else None"""
-    import msvcrt
     if msvcrt.kbhit():
         return msvcrt.getwch().lower()
     return None
 
-def send_train_to_block(lc_id, lc, bk, block, gotoDone, entry, delay=0.3):
+
+def send_train_to_block(lc_id, lc, bk, block, goto_done, entry, delay=0.3):
     print(color(f"→ {lc_id}: sending gotoblock -> {block}", RED))
 
     # Ensure abort_reason is cleared unless we set it now
@@ -90,10 +96,7 @@ def send_train_to_block(lc_id, lc, bk, block, gotoDone, entry, delay=0.3):
     res_by = str(getattr(bk, "locid", None) or "-")
     is_occupied = bk.is_occupied()
 
-    print(
-        f"Block status -> Free: {is_free}, Reserved: {is_reserved}, "
-        f"Reserved by: {res_by}, Occupied: {is_occupied}"
-    )
+    print(f"Block status -> Free: {is_free}, Reserved: {is_reserved}, Reserved by: {res_by}, Occupied: {is_occupied}")
 
     # ----------------------------
     # ABORT CONDITIONS
@@ -102,14 +105,14 @@ def send_train_to_block(lc_id, lc, bk, block, gotoDone, entry, delay=0.3):
         msg = f"BLOCKED by {res_by}"
         entry["abort_reason"] = msg
         print(color(f"✖ {block}: {msg}. Aborting send of {lc_id}.", RED))
-        gotoDone[lc_id] = False
+        goto_done[lc_id] = False
         return
 
     if is_reserved and res_by not in ["-", "None", lc_id]:
         msg = f"RESERVED by {res_by}"
         entry["abort_reason"] = msg
         print(color(f"✖ {block}: {msg}. Aborting send of {lc_id}.", RED))
-        gotoDone[lc_id] = False
+        goto_done[lc_id] = False
         return
 
     # If we reach here, block is not reserved/occupied by another loco
@@ -133,24 +136,21 @@ def send_train_to_block(lc_id, lc, bk, block, gotoDone, entry, delay=0.3):
     res_by = str(getattr(bk, "locid", None) or "-")
     is_occupied = bk.is_occupied()
 
-    print(
-        f"Block status -> Free: {is_free}, Reserved: {is_reserved}, "
-        f"Reserved by: {res_by}, Occupied: {is_occupied}"
-    )
+    print(f"Block status -> Free: {is_free}, Reserved: {is_reserved}, Reserved by: {res_by}, Occupied: {is_occupied}")
 
     # final safety: if another loco appeared in the short window, abort and set reason
     if is_occupied and res_by not in ["-", "None", lc_id]:
         msg = f"BLOCKED by {res_by}"
         entry["abort_reason"] = msg
         print(color(f"✖ {block}: {msg} (appeared). Aborting send of {lc_id}.", RED))
-        gotoDone[lc_id] = False
+        goto_done[lc_id] = False
         return
 
     if is_reserved and res_by not in ["-", "None", lc_id]:
         msg = f"RESERVED by {res_by}"
         entry["abort_reason"] = msg
         print(color(f"✖ {block}: {msg} (appeared). Aborting send of {lc_id}.", RED))
-        gotoDone[lc_id] = False
+        goto_done[lc_id] = False
         return
 
     # proceed to request route and start
@@ -166,7 +166,7 @@ def send_train_to_block(lc_id, lc, bk, block, gotoDone, entry, delay=0.3):
             pass
 
     # mark that we attempted a goto for this loco during this homing run
-    gotoDone[lc_id] = True
+    goto_done[lc_id] = True
 
     # mark HOME_ONCE blocks as sent
     if block in ("BN9", "BN10", "BN11"):
@@ -175,35 +175,42 @@ def send_train_to_block(lc_id, lc, bk, block, gotoDone, entry, delay=0.3):
     time.sleep(delay)
     return
 
+
 # ----------------------------
 # Dashboard rendering
 # ----------------------------
-def render_status_table(trains_to_process, lc_state, gotoDone, pr):
+def render_status_table(trains_to_process, lc_state, goto_done, pr):
     model = pr.model
     clear_screen()
     print(BOLD + "CURRENT LOCOMOTIVE STATUS" + RESET)
     print()
 
     # Column widths
-    W_LOCO   = 16
-    W_BLOCK  = 7
-    W_SPD    = 4
-    W_HOME   = 7
+    W_LOCO = 16
+    W_BLOCK = 7
+    W_SPD = 4
+    W_HOME = 7
     W_TARGET = 7
-    W_STAGE  = 6
+    W_STAGE = 6
     W_STATUS = 30
 
     # Top border
     print(
         "╔"
-        + "═"*(W_LOCO+2)   + "╦"
-        + "═"*(W_BLOCK+2)  + "╦"
-        + "═"*(W_SPD+2)    + "╦"
-        + "═"*(W_HOME+2)   + "╦"
-        + "═"*(W_TARGET+2) + "╦"
-        + "═"*(W_STAGE+2)  + "╦"
-        + "═"*(W_STATUS+2) +
-        "╗"
+        + "═" * (W_LOCO + 2)
+        + "╦"
+        + "═" * (W_BLOCK + 2)
+        + "╦"
+        + "═" * (W_SPD + 2)
+        + "╦"
+        + "═" * (W_HOME + 2)
+        + "╦"
+        + "═" * (W_TARGET + 2)
+        + "╦"
+        + "═" * (W_STAGE + 2)
+        + "╦"
+        + "═" * (W_STATUS + 2)
+        + "╗"
     )
 
     # Header
@@ -220,14 +227,20 @@ def render_status_table(trains_to_process, lc_state, gotoDone, pr):
     # Header separator
     print(
         "╠"
-        + "═"*(W_LOCO+2)   + "╬"
-        + "═"*(W_BLOCK+2)  + "╬"
-        + "═"*(W_SPD+2)    + "╬"
-        + "═"*(W_HOME+2)   + "╬"
-        + "═"*(W_TARGET+2) + "╬"
-        + "═"*(W_STAGE+2)  + "╬"
-        + "═"*(W_STATUS+2) +
-        "╣"
+        + "═" * (W_LOCO + 2)
+        + "╬"
+        + "═" * (W_BLOCK + 2)
+        + "╬"
+        + "═" * (W_SPD + 2)
+        + "╬"
+        + "═" * (W_HOME + 2)
+        + "╬"
+        + "═" * (W_TARGET + 2)
+        + "╬"
+        + "═" * (W_STAGE + 2)
+        + "╬"
+        + "═" * (W_STATUS + 2)
+        + "╣"
     )
 
     rows = list(trains_to_process.items())
@@ -237,7 +250,7 @@ def render_status_table(trains_to_process, lc_state, gotoDone, pr):
 
         # Target / Stage
         target = entry.get("target", home)
-        stage  = entry.get("stage", "HOME").upper()
+        stage = entry.get("stage", "HOME").upper()
 
         # Locomotive state
         state = lc_state.get(lc_id, {})
@@ -251,7 +264,8 @@ def render_status_table(trains_to_process, lc_state, gotoDone, pr):
             is_res = bk.is_reserved()
             is_occ = bk.is_occupied()
             res_by = getattr(bk, "locid", "-") or "-"
-        except:
+        except Exception as e:
+            print(f"render_status_table: Block Info Error: {repr(e)}")
             is_res = False
             is_occ = False
             res_by = "-"
@@ -269,14 +283,14 @@ def render_status_table(trains_to_process, lc_state, gotoDone, pr):
         elif cur == home and spd > 0:
             raw_status = "IN HOME (moving)"
             status = color(raw_status, YELLOW)
-        elif is_res and res_by == lc_id and not gotoDone.get(lc_id, False):
+        elif is_res and res_by == lc_id and not goto_done.get(lc_id, False):
             # reserved by this loco but not yet marked as sent
             raw_status = "RESERVED (now)"
             status = color(raw_status, GREEN)
-        elif gotoDone.get(lc_id, False) and is_res and res_by == lc_id:
+        elif goto_done.get(lc_id, False) and is_res and res_by == lc_id:
             raw_status = "SENT (reserved)"
             status = color(raw_status, GREEN)
-        elif gotoDone.get(lc_id, False) and is_res and res_by != lc_id:
+        elif goto_done.get(lc_id, False) and is_res and res_by != lc_id:
             raw_status = f"SENT (reserved by {res_by})"
             status = color(raw_status, YELLOW)
         elif is_res and res_by != lc_id:
@@ -285,7 +299,7 @@ def render_status_table(trains_to_process, lc_state, gotoDone, pr):
         elif is_occ:
             raw_status = "WAIT (occupied)"
             status = color(raw_status, YELLOW)
-        elif nxt != "-" and not gotoDone.get(lc_id, False):
+        elif nxt != "-" and not goto_done.get(lc_id, False):
             raw_status = "PENDING (will send)"
             status = color(raw_status, CYAN)
         else:
@@ -297,48 +311,52 @@ def render_status_table(trains_to_process, lc_state, gotoDone, pr):
         status_colored = status.replace(raw_status, padded_raw)
 
         # Print row
-        print(
-            f"║ {lc_id:<{W_LOCO}} ║"
-            f" {cur:<{W_BLOCK}} ║"
-            f" {spd:>{W_SPD}} ║"
-            f" {home:<{W_HOME}} ║"
-            f" {target:<{W_TARGET}} ║"
-            f" {stage:<{W_STAGE}} ║"
-            f" {status_colored} ║"
-        )
+        print(f"║ {lc_id:<{W_LOCO}} ║ {cur:<{W_BLOCK}} ║ {spd:>{W_SPD}} ║ {home:<{W_HOME}} ║ {target:<{W_TARGET}} ║ {stage:<{W_STAGE}} ║ {status_colored} ║")
 
         # Row separator or bottom border
         if i < len(rows) - 1:
             print(
                 "╠"
-                + "═"*(W_LOCO+2)   + "╬"
-                + "═"*(W_BLOCK+2)  + "╬"
-                + "═"*(W_SPD+2)    + "╬"
-                + "═"*(W_HOME+2)   + "╬"
-                + "═"*(W_TARGET+2) + "╬"
-                + "═"*(W_STAGE+2)  + "╬"
-                + "═"*(W_STATUS+2) +
-                "╣"
+                + "═" * (W_LOCO + 2)
+                + "╬"
+                + "═" * (W_BLOCK + 2)
+                + "╬"
+                + "═" * (W_SPD + 2)
+                + "╬"
+                + "═" * (W_HOME + 2)
+                + "╬"
+                + "═" * (W_TARGET + 2)
+                + "╬"
+                + "═" * (W_STAGE + 2)
+                + "╬"
+                + "═" * (W_STATUS + 2)
+                + "╣"
             )
         else:
             print(
                 "╚"
-                + "═"*(W_LOCO+2)   + "╩"
-                + "═"*(W_BLOCK+2)  + "╩"
-                + "═"*(W_SPD+2)    + "╩"
-                + "═"*(W_HOME+2)   + "╩"
-                + "═"*(W_TARGET+2) + "╩"
-                + "═"*(W_STAGE+2)  + "╩"
-                + "═"*(W_STATUS+2) +
-                "╝"
+                + "═" * (W_LOCO + 2)
+                + "╩"
+                + "═" * (W_BLOCK + 2)
+                + "╩"
+                + "═" * (W_SPD + 2)
+                + "╩"
+                + "═" * (W_HOME + 2)
+                + "╩"
+                + "═" * (W_TARGET + 2)
+                + "╩"
+                + "═" * (W_STAGE + 2)
+                + "╩"
+                + "═" * (W_STATUS + 2)
+                + "╝"
             )
     print()
+
 
 # ----------------------------
 # Main homing routine
 # ----------------------------
-def send_locomotives_home(pr: PyRocrail, lc_state, gotoDone, max_cycles: int = 40, stop_flag=lambda: False):
-    
+def send_locomotives_home(pr: PyRocrail, lc_state, goto_done, max_cycles: int = 40, stop_flag=lambda: False):
     """Send all locomotives to their home blocks."""
     model = pr.model
     model.get_blocks()
@@ -348,7 +366,7 @@ def send_locomotives_home(pr: PyRocrail, lc_state, gotoDone, max_cycles: int = 4
     trains_to_process = {}
     for lc_id, lc in locos.items():
         # skip any specific loco if you want
-        #if lc_id == "Ce6/8-II-14282":
+        # if lc_id == "Ce6/8-II-14282":
         #    continue
 
         home = lc.home
@@ -358,17 +376,9 @@ def send_locomotives_home(pr: PyRocrail, lc_state, gotoDone, max_cycles: int = 4
         if not home:
             continue
 
-        is_at_home = (cur == home and speed == 0)
+        is_at_home = cur == home and speed == 0
         if not is_at_home:
-            trains_to_process[lc_id] = {
-                "lc": lc,
-                "home": home,
-                "arrived": False,
-                "abort_reason": None,
-                "target": home,
-                "stage": "HOME",
-                "home_sent": False
-            }
+            trains_to_process[lc_id] = {"lc": lc, "home": home, "arrived": False, "abort_reason": None, "target": home, "stage": "HOME", "home_sent": False}
 
     nb_trains = len(trains_to_process)
     if nb_trains == 0:
@@ -390,7 +400,7 @@ def send_locomotives_home(pr: PyRocrail, lc_state, gotoDone, max_cycles: int = 4
             cur_block = getattr(lc, "blockid", "-")
             state = lc_state.get(lc_id, {})
             dest_block = state.get("dest") or state.get("last_dest")
-            
+
             if home in ["BN9", "BN10", "BN11"]:
                 if dest_block == home:
                     entry["target"] = home
@@ -405,7 +415,7 @@ def send_locomotives_home(pr: PyRocrail, lc_state, gotoDone, max_cycles: int = 4
                 entry["target"] = home
                 entry["stage"] = "HOME"
 
-        render_status_table(trains_to_process, lc_state, gotoDone, pr)
+        render_status_table(trains_to_process, lc_state, goto_done, pr)
         print(f"Locos_Home - Cycle {cycle}/{max_cycles} - trains: {nb_trains}")
 
         # Inspect and decide actions
@@ -425,12 +435,11 @@ def send_locomotives_home(pr: PyRocrail, lc_state, gotoDone, max_cycles: int = 4
                 bk = model.get_bk(target)
                 is_free = bk.is_free()
                 is_reserved = bk.is_reserved()
-                res_by = getattr(bk, "locid", None) or "-"
                 is_occupied = bk.is_occupied()
-            except Exception:
+            except Exception as e:
+                print(f"send_locomotives_home: Refresh Error: {repr(e)}")
                 is_free = False
                 is_reserved = False
-                res_by = "-"
                 is_occupied = False
 
             # Arrival checks
@@ -439,13 +448,13 @@ def send_locomotives_home(pr: PyRocrail, lc_state, gotoDone, max_cycles: int = 4
                 entry["home_sent"] = False
                 entry["abort_reason"] = None
                 continue
-                
+
             # --------------------------------------------------
             # Skip resend for HOME_ONCE blocks
             # --------------------------------------------------
             if target in ("BN9", "BN10", "BN11") and entry["home_sent"]:
                 continue
-                
+
             # --------------------------------------------------
             # Normal resend logic
             # --------------------------------------------------
@@ -457,20 +466,20 @@ def send_locomotives_home(pr: PyRocrail, lc_state, gotoDone, max_cycles: int = 4
                 continue
 
             if is_free:
-                send_train_to_block(lc_id, lc, bk, target, gotoDone, entry)
+                send_train_to_block(lc_id, lc, bk, target, goto_done, entry)
                 continue
 
             if is_reserved:
-                if gotoDone.get(lc_id, False):
+                if goto_done.get(lc_id, False):
                     continue
                 else:
-                    send_train_to_block(lc_id, lc, bk, target, gotoDone, entry)
+                    send_train_to_block(lc_id, lc, bk, target, goto_done, entry)
                     continue
 
             if is_occupied:
                 continue
 
-            send_train_to_block(lc_id, lc, bk, target, gotoDone, entry)
+            send_train_to_block(lc_id, lc, bk, target, goto_done, entry)
 
         time.sleep(cycletime)
 
@@ -485,19 +494,19 @@ def send_locomotives_home(pr: PyRocrail, lc_state, gotoDone, max_cycles: int = 4
             home = entry["home"]
             if cur == home and speed == 0:
                 entry["arrived"] = True
-                entry["home_sent"] = False   
+                entry["home_sent"] = False
                 entry["abort_reason"] = None
                 arrival_changed = True
-                
+
         # redraw table immediately if any loco arrived
         if arrival_changed:
-            render_status_table(trains_to_process, lc_state, gotoDone, pr)
+            render_status_table(trains_to_process, lc_state, goto_done, pr)
 
         arrived_count = sum(1 for e in trains_to_process.values() if e["arrived"])
 
         # stop early if all arrived
         if arrived_count == nb_trains:
-            render_status_table(trains_to_process, lc_state, gotoDone, pr)
+            render_status_table(trains_to_process, lc_state, goto_done, pr)
             print(color("🎉 All trains have arrived at home.", GREEN))
             break
 
@@ -506,6 +515,7 @@ def send_locomotives_home(pr: PyRocrail, lc_state, gotoDone, max_cycles: int = 4
         if not entry["arrived"]:
             lc = entry["lc"]
             print(color(f"⚠️ Train not arrived: {lc_id} (current: {getattr(lc,'blockid','?')} home: {entry['home']})", YELLOW))
+
 
 # ----------------------------
 # Controller class
@@ -516,7 +526,7 @@ class HomeController:
         self.lc_state = {}
         self.bk_state = {}
         self.running = False
-        self.gotoDone = {}
+        self.goto_done = {}
 
     def start_connection(self):
         self.pr.start()
@@ -524,12 +534,12 @@ class HomeController:
 
         def rr_update(kind, obj_id, obj):
             if kind == "lc":
-                cur  = getattr(obj, "blockid", None)
+                cur = getattr(obj, "blockid", None)
                 dest = getattr(obj, "destblockid", None)
                 if obj_id not in self.lc_state:
                     self.lc_state[obj_id] = {"blockid": None, "dest": None, "last_dest": None}
                 self.lc_state[obj_id]["blockid"] = cur
-                self.lc_state[obj_id]["dest"]    = dest
+                self.lc_state[obj_id]["dest"] = dest
                 if dest:
                     self.lc_state[obj_id]["last_dest"] = dest
             elif kind == "bk":
@@ -546,7 +556,7 @@ class HomeController:
                 try:
                     is_free = obj.is_free()
                 except Exception:
-                    is_free = (not is_occupied and not is_reserved)
+                    is_free = not is_occupied and not is_reserved
                 self.bk_state[obj_id] = {
                     "reserved_by": reserved_by,
                     "is_occupied": is_occupied,
@@ -561,8 +571,8 @@ class HomeController:
         if not self.running:
             print(color("❌ Connection not started yet!", RED))
             return
-        self.gotoDone = {}
-        send_locomotives_home(self.pr, self.lc_state, self.gotoDone, max_cycles=max_cycles)
+        self.goto_done = {}
+        send_locomotives_home(self.pr, self.lc_state, self.goto_done, max_cycles=max_cycles)
 
     def stop(self):
         try:
@@ -571,6 +581,7 @@ class HomeController:
             pass
         self.running = False
         print(color("🛑 Rocrail connection stopped.", YELLOW))
+
 
 # ----------------------------
 # Script entry point

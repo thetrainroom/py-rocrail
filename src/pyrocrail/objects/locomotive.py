@@ -53,11 +53,27 @@ class Locomotive:
         self.communicator.send("lc", cmd)
         self.dir = forward
 
-    def stop(self) -> None:
-        """Emergency stop"""
+    def emergency_stop(self) -> None:
+        """Emergency stop - immediately sets speed to 0
+
+        Note:
+            This directly sets speed to 0. For auto-mode stopping at next block,
+            use stop() instead.
+        """
         cmd = f'<lc id="{self.idx}" V="0"/>'
         self.communicator.send("lc", cmd)
         self.V = 0
+
+    def stop(self) -> None:
+        """Stop locomotive at next block in auto mode
+
+        Note:
+            In auto mode, this tells the locomotive to stop at the next block.
+            The locomotive will decelerate and stop at the next block it enters.
+            Use emergency_stop() to immediately set speed to 0.
+        """
+        cmd = f'<lc id="{self.idx}" cmd="stop"/>'
+        self.communicator.send("lc", cmd)
 
     def set_function(self, fn_num: int, state: bool) -> None:
         """Set function state

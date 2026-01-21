@@ -155,9 +155,14 @@ loco.set_direction(forward: bool) -> None
 Set direction (True=forward, False=reverse).
 
 ```python
+loco.emergency_stop() -> None
+```
+Emergency stop - immediately sets speed to 0.
+
+```python
 loco.stop() -> None
 ```
-Emergency stop (speed to 0).
+Stop locomotive at next block in auto mode (cmd="stop"). The locomotive will decelerate and stop at the next block it enters.
 
 ```python
 loco.set_function(fn_num: int, state: bool) -> None

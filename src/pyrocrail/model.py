@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 import datetime
 import time
 import logging
+from collections import deque
 from dataclasses import dataclass, field
 from typing import Callable, Any
 from pyrocrail.objects.feedback import Feedback
@@ -35,6 +36,15 @@ class Clock:
     ts: datetime.datetime = field(default_factory=datetime.datetime.now)
 
 
+@dataclass
+class RocrailException:
+    level: str  # "exception", "warning", "info", "debug"
+    code: str
+    text: str
+    obj_id: str
+    timestamp: datetime.datetime = field(default_factory=datetime.datetime.now)
+
+
 class Model:
     def __init__(self, com: Communicator):
         self.communicator = com
@@ -62,6 +72,7 @@ class Model:
         self.time_callback: Callable[[], None] | None = None
         self.plan_recv = False
         self.server_shutting_down = False  # Flag for graceful server shutdown
+        self.exceptions: deque[RocrailException] = deque(maxlen=50)
 
     def init(self):
         self.communicator.send("model", '<model cmd="plan"/>')
@@ -269,6 +280,10 @@ class Model:
     def get_locations(self) -> dict[str, Location]:
         """Get all locations {id: Location}"""
         return dict(self._location_domain)
+
+    def get_exceptions(self, limit: int = 50) -> list[RocrailException]:
+        """Get recent server exceptions, most recent first."""
+        return list(reversed(self.exceptions))[:limit]
 
     # Model query commands
     def request_locomotive_list(self) -> None:
@@ -817,33 +832,35 @@ class Model:
             msg_parts.append(text)
         msg = " ".join(msg_parts) if msg_parts else "Unknown error"
 
-        # Try to parse level as numeric (Rocrail uses bit flags)
+        # Determine normalized level string
+        level = "info"
         try:
             level_num = int(level_str)
-
-            # Map numeric Rocrail levels to Python logging levels
-            if level_num & 0x0001:  # EXCEPTION bit
-                logger.error(f"Rocrail exception: {msg}")
-            elif level_num & 0x0002:  # WARNING bit
-                logger.warning(f"Rocrail warning: {msg}")
-            elif level_num & 0x0004:  # INFO bit
-                logger.info(f"Rocrail info: {msg}")
-            elif level_num & 0x4000:  # DEBUG bit (16384)
-                logger.debug(f"Rocrail debug: {msg}")
+            if level_num & 0x0001:
+                level = "exception"
+            elif level_num & 0x0002:
+                level = "warning"
+            elif level_num & 0x0004:
+                level = "info"
+            elif level_num & 0x4000:
+                level = "debug"
             else:
-                # Other flags (BYTE, AUTO, CALC, MONITOR, PARSE)
-                logger.debug(f"Rocrail [{level_num}]: {msg}")
-
+                level = "debug"
         except ValueError:
-            # String-based level (backward compatibility)
-            if level_str == "exception":
-                logger.error(f"Rocrail exception: {msg}")
-            elif level_str == "warning":
-                logger.warning(f"Rocrail warning: {msg}")
-            elif level_str == "info":
-                logger.info(f"Rocrail info: {msg}")
-            else:
-                logger.info(f"Rocrail {level_str}: {msg}")
+            if level_str in ("exception", "warning", "info", "debug"):
+                level = level_str
+
+        # Log at appropriate level
+        log_map = {"exception": logger.error, "warning": logger.warning, "info": logger.info, "debug": logger.debug}
+        log_map.get(level, logger.info)(f"Rocrail {level}: {msg}")
+
+        # Store in buffer
+        exc = RocrailException(level=level, code=code, text=text, obj_id=obj_id)
+        self.exceptions.append(exc)
+
+        # Fire change callback
+        if self.change_callback:
+            self.change_callback("exception", code or level, exc)
 
     def _handle_sys(self, sys_xml: ET.Element):
         """Handle system messages from server

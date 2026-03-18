@@ -16,6 +16,7 @@ class Location:
     - FIFO (First In, First Out): Controls train departure order
     - Scheduling: Generates timetables and manages train assignments
     - Flow management: Automatic traffic control for hidden yards
+    - Block membership: Tracks which blocks belong to this location
 
     See: https://wiki.rocrail.net/doku.php?id=locations-details-en
     """
@@ -34,6 +35,10 @@ class Location:
         self.scheduleid = ""  # Associated schedule ID
         self.trains = False  # Only assigned train locomotives allowed
 
+        # Block membership (CSV strings from XML attributes)
+        self.blocks = ""  # Location related blocks as CSV
+        self.subblocks = ""  # Location related sub-blocks as CSV
+
         self.build(location_xml)
 
     def build(self, location: ET.Element):
@@ -42,6 +47,34 @@ class Location:
             if attr == "id":
                 continue
             set_attr(self, attr, value)
+
+    def get_blocks(self) -> list[str]:
+        """Get list of main block IDs belonging to this location."""
+        return [b.strip() for b in self.blocks.split(",") if b.strip()] if self.blocks else []
+
+    def get_subblocks(self) -> list[str]:
+        """Get list of sub-block IDs belonging to this location."""
+        return [b.strip() for b in self.subblocks.split(",") if b.strip()] if self.subblocks else []
+
+    def set_minocc(self, minocc: int) -> None:
+        """Set the minimum occupancy for this location.
+
+        Args:
+            minocc: Minimum number of trains that must remain in the location
+        """
+        cmd = f'<location id="{self.idx}" minocc="{minocc}"/>'
+        self.communicator.send("location", cmd)
+        self.minocc = minocc
+
+    def set_maxocc(self, maxocc: int) -> None:
+        """Set the maximum occupancy for this location.
+
+        Args:
+            maxocc: Maximum number of trains allowed in the location
+        """
+        cmd = f'<location id="{self.idx}" maxocc="{maxocc}"/>'
+        self.communicator.send("location", cmd)
+        self.maxocc = maxocc
 
     def info(self, svalue: str | None = None) -> None:
         """Set or query location information

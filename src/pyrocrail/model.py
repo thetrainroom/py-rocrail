@@ -266,6 +266,10 @@ class Model:
         """Get all stage blocks {id: Stage}"""
         return dict(self._sb_domain)
 
+    def get_locations(self) -> dict[str, Location]:
+        """Get all locations {id: Location}"""
+        return dict(self._location_domain)
+
     # Model query commands
     def request_locomotive_list(self) -> None:
         """Request locomotive list from server

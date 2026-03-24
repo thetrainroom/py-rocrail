@@ -61,7 +61,12 @@ jobs:
     - name: Install build tools
       run: |
         python -m pip install --upgrade pip
-        pip install poetry poetry-dynamic-versioning
+        pip install poetry
+
+    - name: Set version from tag
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/v}
+        poetry version $VERSION
 
     - name: Build package
       run: poetry build

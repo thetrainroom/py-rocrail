@@ -27,12 +27,28 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 [tool.poetry]
 name = "pyrocrail"
 version = "0.0.0"
-description = "Various scripts used by both X and XC, but mostly geared towards XC"
+description = "Python library for interfacing with Rocrail model railway control software"
 authors = ["TheTrainroom"]
+license = "GPL-3.0-only"
 readme = "README.md"
+homepage = "https://github.com/thetrainroom/py-rocrail"
+repository = "https://github.com/thetrainroom/py-rocrail"
+keywords = ["rocrail", "model-railway", "automation", "dcc"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: System :: Hardware",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+packages = [{include = "pyrocrail", from = "src"}]
 
 [tool.poetry.dependencies]
-
+python = ">=3.10"
 
 [tool.poetry.dev-dependencies]
 setuptools = "75.2.0"
@@ -46,5 +62,5 @@ coverage = "7.6.4"
 pyright = "1.1.385"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
 
 # Download and install Rocrail from snapshot
 ARG ROCRAIL_PACKAGE=Debian/Rocrail-debian11-i64.zip
-RUN wget https://wiki.rocrail.net/rocrail-snapshot/${ROCRAIL_PACKAGE} -O /tmp/rocrail.zip \
+RUN wget https://www.rocrail.online/rocrail-snapshot/${ROCRAIL_PACKAGE} -O /tmp/rocrail.zip \
     && mkdir -p /opt/rocrail \
     && unzip /tmp/rocrail.zip -d /opt/rocrail \
     && chmod +x /opt/rocrail/bin/rocrail \
